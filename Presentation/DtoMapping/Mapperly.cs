@@ -12,7 +12,15 @@ public static class Mapperly
         {
             Id = dto.Id,
             Name = dto.Name,
-            Description = dto.Description
+            Description = dto.Description,
+            EmployeeCount = dto.EmployeeCount,
+            Employees = dto.Employees.Select(e => new DepartmentEmployeeViewModel
+            {
+                Id = e.Id,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Email = e.Email
+            }).ToList()
         };
     }
 
@@ -41,6 +49,36 @@ public static class Mapperly
         return new DepartmentsDto()
         {
             Departments = vm.Departments.Select(d => d.ToDto()).ToList()
+        };
+    }
+
+    public static UpdateDepartmentViewModel ToViewModel(this UpdateDepartmentDto dto)
+    {
+        return new UpdateDepartmentViewModel()
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description
+        };
+    }
+
+    public static UpdateDepartmentViewModel ToUpdateDepartmentViewModel(this DepartmentDto dto)
+    {
+        return new UpdateDepartmentViewModel()
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description
+        };
+    }
+
+    public static UpdateDepartmentDto ToDto(this UpdateDepartmentViewModel vm)
+    {
+        return new UpdateDepartmentDto()
+        {
+            Id = vm.Id,
+            Name = vm.Name,
+            Description = vm.Description
         };
     }
 }

@@ -1,0 +1,56 @@
+﻿@using Presentation.Models.EmployeeVM
+@{
+    ViewData["Title"] = "Create An Employee";
+}
+@model CreateEmployeeViewModel
+
+<h1>@ViewData["Title"]</h1>
+<hr>
+
+<form asp-action="Create" method="post">
+
+    <div class="row">
+        <div class="mb-3 col-md-4">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-md-4">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-md-4">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="mb-3 col-md-6">
+            <label asp-for="DepartmentId" class="form-label"></label>
+            <select asp-for="DepartmentId" class="form-select" asp-items="Model.Departments">
+                <option value="">Select a Department</option>
+            </select>
+            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-md-6">
+            <label asp-for="Salary" class="form-label"></label>
+            <input type="number" asp-for="Salary" class="form-control" />
+            <span asp-validation-for="Salary" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 col-md-6">
+        <label asp-for="HireDate" class="form-label"></label>
+        <input asp-for="HireDate" class="form-control" />
+        <span asp-validation-for="HireDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Record</button>
+</form>

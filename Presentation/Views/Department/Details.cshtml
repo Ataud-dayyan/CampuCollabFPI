@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = $"{Model.Name} Department Information";
+}
+@model DepartmentViewModel
+
+<div>
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+    </dl>
+
+    <h6>Employees in this Department</h6>
+    <hr />
+
+    @if (!Model.Employees.Any())
+    {
+        <h5 class="text-danger">No employees in this department!</h5>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var employee in Model.Employees)
+                {
+                    <tr>
+                        <td>@employee.FirstName</td>
+                        <td>@employee.LastName</td>
+                        <td>@employee.Email</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <a asp-controller="Department" asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
+</div>

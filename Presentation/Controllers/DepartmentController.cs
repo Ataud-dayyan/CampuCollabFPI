@@ -24,9 +24,19 @@ public class DepartmentController : BaseController
         return View(viewModel);
     }
 
-    public ActionResult Details(int id)
+    public async Task<IActionResult> Details(Guid id)
     {
-        return View();
+        var response = await _departmentService.GetDepartmentByIdAsync(id);
+
+        if (response == null)
+        {
+            SetFlashMessage("Department not found.", "error");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var viewModel = response.ToViewModel();
+
+        return View(viewModel);
     }
 
     public ActionResult Create()
@@ -38,9 +48,8 @@ public class DepartmentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateDepartmentViewModel model)
     {
-        if(!ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            SetFlashMessage("Please fill in all required fields correctly.", "error");
             return View(model);
         }
 
@@ -64,42 +73,52 @@ public class DepartmentController : BaseController
         return RedirectToAction(nameof(Index));
     }
 
-    public ActionResult Edit(int id)
+    public async Task<IActionResult> Edit(Guid id)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            return View();
+        }
+
+        var department = await _departmentService.GetDepartmentByIdAsync(id);
+
+        if (department == null)
+        {
+            SetFlashMessage("Department not found.", "error");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var viewModel = department.ToUpdateDepartmentViewModel();
+
+        return View(viewModel);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(int id, IFormCollection collection)
+    public async Task<IActionResult> Edit(int id, UpdateDepartmentViewModel model)
     {
-        try
+        var updateDepartment = model.ToDto();
+
+        var response = await _departmentService.UpdateDepartmentAsync(updateDepartment);
+
+        if (response == null)
         {
-            return RedirectToAction(nameof(Index));
+            SetFlashMessage("An error occurred while updating the department. Please try again.", "error");
+            return View(model);
         }
-        catch
-        {
-            return View();
-        }
+
+        SetFlashMessage("Department updated successfully.", "success");
+        return RedirectToAction(nameof(Index));
     }
 
-    public ActionResult Delete(int id)
-    {
-        return View();
-    }
 
-    // POST: DepartmentController/Delete/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Delete(int id, IFormCollection collection)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            return RedirectToAction(nameof(Index));
-        }
-        catch
-        {
-            return View();
-        }
+        await _departmentService.DeleteDepartmentAsync(id);
+        SetFlashMessage("Department deleted successfully.", "success");
+
+        return RedirectToAction(nameof(Index));
     }
 }

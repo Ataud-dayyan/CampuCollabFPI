@@ -6,6 +6,7 @@ public class DepartmentDto
     public string Name { get; set; } = default!;
     public string? Description { get; set; }
     public List<EmployeeDto> Employees { get; set; } = [];
+    public int EmployeeCount { get; set; }
 }
 
 public class DepartmentsDto
@@ -18,4 +19,11 @@ public class CreateDepartmentDto
     public Guid Id { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string? Description { get; set; } 
+}
+
+public class UpdateDepartmentDto
+{
+    public Guid Id { get; set; } = default!;
+    public string Name { get; set; } = default!;
+    public string? Description { get; set; }
 }

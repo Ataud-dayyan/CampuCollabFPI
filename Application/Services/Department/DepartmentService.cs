@@ -39,25 +39,81 @@ public class DepartmentService : IDepartmentService
         }
     }
 
-    public Task DeleteDepartmentAsync(Guid departmentId)
+    public async Task DeleteDepartmentAsync(Guid departmentId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var department = await _context.Departments.FindAsync(departmentId);
+
+            if (department == null)
+            {
+                throw new KeyNotFoundException($"Department with ID {departmentId} not found.");
+            }
+
+            _context.Departments.Remove(department);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred while deleting the department.", ex);
+        }
     }
 
     public async Task<DepartmentsDto> GetAllDepartmentsAsync()
     {
-        var departments = await _context.Departments.ToListAsync();
+        var departments = await _context.Departments
+                            .Include(x => x.Employees)
+                            .ToListAsync();
 
         return departments.DepartmentsDto();
     }
 
-    public Task<DepartmentDto> GetDepartmentByIdAsync(Guid departmentId)
+    public async Task<DepartmentDto?> GetDepartmentByIdAsync(Guid departmentId)
     {
-        throw new NotImplementedException();
+        var department = await _context.Departments
+            .Where(d => d.Id == departmentId)
+            .Select(d => new DepartmentDto
+            {
+                Id = d.Id,
+                Name = d.Name,
+                Description = d.Description,
+                Employees = d.Employees.Select(e => new EmployeeDto
+                {
+                    Id = e.Id,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Email = e.Email
+                }).ToList(),
+                EmployeeCount = d.Employees.Count
+            })
+            .FirstOrDefaultAsync();
+
+        return department;
     }
 
-    public Task<DepartmentDto> UpdateDepartmentAsync(DepartmentDto departmentDto)
+    public async Task<UpdateDepartmentDto> UpdateDepartmentAsync(UpdateDepartmentDto departmentDto)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var department = await _context.Departments.FindAsync(departmentDto.Id);
+
+            if (department == null)
+            {
+                throw new KeyNotFoundException($"Department with ID {departmentDto.Id} not found.");
+            }
+
+            department.Name = departmentDto.Name;
+            department.Description = departmentDto.Description;
+
+            _context.Departments.Update(department);
+            await _context.SaveChangesAsync();
+
+            return department.ToUpdateDto();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred while updating the department.", ex);
+            return new UpdateDepartmentDto();
+        }
     }
 }

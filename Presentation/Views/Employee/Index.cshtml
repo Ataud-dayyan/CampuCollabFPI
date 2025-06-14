@@ -1,0 +1,52 @@
+﻿@using Presentation.Models.EmployeeVM
+@{
+    ViewData["Title"] = "Employee List";
+}
+@model EmployeesViewModel
+
+<h1>@ViewData["Title"]</h1>
+
+<a asp-action="Create" class="btn btn-outline-success">Create New Employee</a>
+<hr>
+
+@if (!Model.Employees.Any())
+{
+    <h5 class="text-danger">No records available!</h5>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Firstname</th>
+                <th>Lastname</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var employee in Model.Employees)
+            {
+                <tr>
+                    <td>@employee.FirstName</td>
+                    <td>@employee.LastName</td>
+                    <td>@employee.Email</td>
+                    <td>@employee.Department</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a asp-action="Detail" asp-route-id="@employee.Id" class="btn btn-outline-primary btn-sm">Detail</a>
+                            <a asp-action="Edit" asp-route-id="@employee.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <form asp-action="Delete" asp-route-id="@employee.Id" method="post"
+                                  onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
