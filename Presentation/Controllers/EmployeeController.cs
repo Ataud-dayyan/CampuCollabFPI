@@ -1,12 +1,14 @@
 ﻿using Application.Dtos;
 using Application.Services.Department;
 using Application.Services.Employees;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Presentation.Models.EmployeeVM;
 
 namespace Presentation.Controllers;
 
+[Authorize]
 public class EmployeeController : BaseController
 {
     private readonly IEmployeeService _employeeService;

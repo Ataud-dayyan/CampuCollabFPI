@@ -1,16 +1,39 @@
 using Data.Context;
-using MySql.EntityFrameworkCore.Extensions;
 using Application;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<EmployeeAppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddMySQLServer<EmployeeAppDbContext>(
-    builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddIdentity<IdentityUser,  IdentityRole> (
+    options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequiredLength = 7;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<EmployeeAppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(20);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/Auth/Login";
+    options.LogoutPath = "/Auth/Logout";
+    options.AccessDeniedPath = "/Auth/Login";
+});
 
 builder.Services.AddServices();
+
 
 var app = builder.Build();
 
@@ -26,6 +49,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapStaticAssets();
 
