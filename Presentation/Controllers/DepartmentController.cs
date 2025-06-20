@@ -6,7 +6,7 @@ using Presentation.DtoMapping;
 using Presentation.Models;
 
 namespace Presentation.Controllers;
-
+[Authorize]
 public class DepartmentController : BaseController
 {
     private readonly IDepartmentService _departmentService;

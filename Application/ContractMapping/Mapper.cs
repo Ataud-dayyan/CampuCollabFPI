@@ -6,7 +6,7 @@ public static class Mapper
 {
     public static DepartmentDto ToDto(this Department department)
     {
-        if (department == null) return null!;
+        if (department == null) return new DepartmentDto();
 
         return new DepartmentDto
         {
@@ -30,14 +30,11 @@ public static class Mapper
 
     public static DepartmentsDto DepartmentsDto(this List<Department> departments)
     {
-        if (departments == null || !departments.Any()) return null!;
-
         return new DepartmentsDto
         {
-            Departments = departments.Select(d => d.ToDto()).ToList()
+            Departments = departments?.Select(d => d.ToDto()).ToList() ?? new List<DepartmentDto>()
         };
     }
-
     public static UpdateDepartmentDto ToUpdateDto(this Department department)
     {
         if (department == null) return null!;
