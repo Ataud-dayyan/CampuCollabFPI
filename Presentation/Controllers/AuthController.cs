@@ -2,21 +2,25 @@
 using Microsoft.AspNetCore.Identity;
 using Presentation.Models;
 using Microsoft.AspNetCore.Authorization;
+using Application.Services.Email;
 
 namespace Presentation.Controllers;
 
 public class AuthController : BaseController
 {
+    private readonly IEmailService _emailService;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
 
     public AuthController(
         SignInManager<IdentityUser> signinManager,
-        UserManager<IdentityUser> userManager
+        UserManager<IdentityUser> userManager,
+        IEmailService emailService
         )
     {
         _signInManager = signinManager;
         _userManager = userManager;
+        _emailService = emailService;
     }
 
     public IActionResult Register()
@@ -39,8 +43,13 @@ public class AuthController : BaseController
 
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Home");
+                //await _signInManager.SignInAsync(user, isPersistent: false);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token }, Request.Scheme);
+                await _emailService.SendEmailAsync(model.Email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
+                SetFlashMessage("Registration successful! Please check your email to confirm your account.", "success");
+
+                return RedirectToAction("Login");
             }
 
             var errorMessages = string.Join("<br>", result.Errors.Select(e => e.Description));
@@ -51,6 +60,29 @@ public class AuthController : BaseController
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            SetFlashMessage("Invalid email confirmation link.", "error");
+            return RedirectToAction("Login");
+        }
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            SetFlashMessage("User not found.", "error");
+            return RedirectToAction("Login");
+        }
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+        {
+            SetFlashMessage("Email confirmed successfully!", "success");
+            return RedirectToAction("Login");
+        }
+        SetFlashMessage("Email confirmation failed.", "error");
+        return RedirectToAction("Login");
+    }
     public IActionResult Login()
     {
         return View();
@@ -61,12 +93,25 @@ public class AuthController : BaseController
     {
         if (ModelState.IsValid)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-            if (result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null)
             {
-                return RedirectToAction("Index", "Home");
+                if (!await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    SetFlashMessage("Please confirm your email before logging in.", "error");
+                    return View(model);
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
             }
+
+           
 
             SetFlashMessage("Invalid Login attempt!", "error");
         }
