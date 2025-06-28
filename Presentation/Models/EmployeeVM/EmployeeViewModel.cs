@@ -46,7 +46,7 @@ public class CreateEmployeeViewModel
     [Display(Name = "Department")]
     public Guid DepartmentId { get; set; }
 
-    public IEnumerable<SelectListItem> Departments { get; set; } = default!;
+    public IEnumerable<SelectListItem> Departments { get; set; } = default!; 
 }
 
 public class EmployeeDetailsViewModel

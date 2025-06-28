@@ -1,9 +1,7 @@
 ﻿using Application.Services.Email;
 using Microsoft.Extensions.Configuration;
-using RestSharp;
 using System.Net;
 using System.Net.Mail;
-using System.Text.Json;
 
 public class EmailService : IEmailService
 {
@@ -16,23 +14,35 @@ public class EmailService : IEmailService
 
     public async Task SendEmailAsync(string toEmail, string subject, string htmlContent)
     {
+        // Validate input first
+        if (string.IsNullOrEmpty(toEmail))
+            throw new ArgumentNullException(nameof(toEmail), "Recipient email cannot be null");
+
         var smtpHost = _config["Mailtrap:Host"];
         var smtpPort = int.Parse(_config["Mailtrap:Port"]);
         var fromEmail = _config["Mailtrap:Email"];
+        var userName = _config["Mailtrap:UserName"];  // Use UserName for auth
         var password = _config["Mailtrap:Password"];
 
-        var client = new SmtpClient(smtpHost, smtpPort)
+        using var client = new SmtpClient(smtpHost, smtpPort)
         {
-            Credentials = new NetworkCredential(fromEmail, password),
+            Credentials = new NetworkCredential(userName, password), // Fixed: Use UserName
             EnableSsl = true
         };
 
-        var message = new MailMessage(fromEmail, fromEmail, subject, htmlContent)
+        using var message = new MailMessage(fromEmail, toEmail, subject, htmlContent)
         {
             IsBodyHtml = true
         };
 
-        await client.SendMailAsync(message);
-
+        try
+        {
+            await client.SendMailAsync(message);
+        }
+        catch (SmtpException ex)
+        {
+            // Log the specific SMTP error for debugging
+            throw new InvalidOperationException($"Failed to send email: {ex.Message}", ex);
+        }
     }
 }

@@ -55,12 +55,12 @@ public class EmployeeController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create(CreateEmployeeViewModel model)
     {
-        if (!ModelState.IsValid)
-        {
-            model.HireDate = DateTime.Today;
-            model.Departments = await GetDepartmentSelectList();
-            return View(model);
-        }
+        //if (!ModelState.IsValid)
+        //{
+        //    model.HireDate = DateTime.Today;
+        //    model.Departments = await GetDepartmentSelectList();
+        //    return View(model);
+        //}
 
         var dto = new CreateEmployeeDto
         {
