@@ -36,4 +36,5 @@ public class UpdateEmployeeDto
     public DateTime HireDate { get; set; }
     public decimal Salary { get; set; }
     public Guid DepartmentId { get; set; } = default!;
+    
 }

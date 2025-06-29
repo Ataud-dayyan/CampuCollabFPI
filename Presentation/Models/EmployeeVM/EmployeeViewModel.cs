@@ -12,6 +12,9 @@ public class EmployeeViewModel
     public string LastName { get; set; } = default!;
     public string Email { get; set; } = default!;
     public string Department { get; set; } = default!;
+    public string Salary { get; set; } = default!;
+
+
 }
 
 public class EmployeesViewModel
@@ -57,7 +60,7 @@ public class EmployeeDetailsViewModel
     public string Email { get; set; } = default!;
     public DateTime HireDate { get; set; }
     public decimal Salary { get; set; }
-    public string Department { get; set; } = default!;
+    public string DepartmentName { get; set; } = default!;
 }
 
 public class UpdateEmployeeViewModel

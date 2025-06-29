@@ -27,38 +27,46 @@ public class AuthController : BaseController
     {
         return View();
     }
-
-    [HttpPost]
-    public async Task<IActionResult> Register(RegisterViewModel model)
+[HttpPost]
+public async Task<IActionResult> Register(RegisterViewModel model)
+{
+    if (ModelState.IsValid)
     {
-        if (ModelState.IsValid)
+        var tempUser = new IdentityUser
         {
-            var user = new IdentityUser
-            {
-                UserName = model.Email,
-                Email = model.Email
-            };
+            UserName = model.Email,
+            Email = model.Email
+        };
 
-            var result = await _userManager.CreateAsync(user, model.Password);
+        var tempResult = await _userManager.CreateAsync(tempUser, model.Password);
 
-            if (result.Succeeded)
-            {
-                //await _signInManager.SignInAsync(user, isPersistent: false);
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, token }, Request.Scheme);
-                await _emailService.SendEmailAsync(model.Email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
-                SetFlashMessage("Registration successful! Please check your email to confirm your account.", "success");
-
-                return RedirectToAction("Login");
-            }
-
-            var errorMessages = string.Join("<br>", result.Errors.Select(e => e.Description));
-
+        if (!tempResult.Succeeded)
+        {
+            var errorMessages = string.Join("<br>", tempResult.Errors.Select(e => e.Description));
             SetFlashMessage(errorMessages, "error");
             return View(model);
         }
-        return View(model);
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(tempUser);
+        var confirmationLink = Url.Action("ConfirmEmail", "Auth", new { userId = tempUser.Id, token }, Request.Scheme);
+
+        try
+        {
+            await _emailService.SendEmailAsync(model.Email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
+        }
+        catch (Exception)
+        {
+            await _userManager.DeleteAsync(tempUser);
+            SetFlashMessage("Failed to send confirmation email. Please try again later.", "error");
+            return View(model);
+        }
+
+        SetFlashMessage("Registration successful! Please check your email to confirm your account.", "success");
+        return RedirectToAction("Login");
     }
+
+    return View(model);
+}
 
     [HttpGet]
     public async Task<IActionResult> ConfirmEmail(string userId, string token)

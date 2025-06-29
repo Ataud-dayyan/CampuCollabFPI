@@ -1,0 +1,34 @@
+﻿
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+.card-custom {
+    min-height: 550px;
+}
+
+.form-side {
+    animation-delay: 0.2s;
+}
+
+.image-side {
+    animation-delay: 0.1s;
+}
+
+@media (max-width: 767px) {
+    .card-custom {
+        min-height: auto;
+    }
+}

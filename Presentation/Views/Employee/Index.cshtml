@@ -36,7 +36,7 @@ else
                     <td>@employee.Department</td>
                     <td>
                         <div class="btn-group" role="group">
-                            <a asp-action="Detail" asp-route-id="@employee.Id" class="btn btn-outline-primary btn-sm">Detail</a>
+                            <a asp-action="Details" asp-route-id="@employee.Id" class="btn btn-outline-primary btn-sm">Detail</a>
                             <a asp-action="Edit" asp-route-id="@employee.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
                             <form asp-action="Delete" asp-route-id="@employee.Id" method="post"
                                   onsubmit="return confirm('Are you sure?');">

@@ -1,7 +1,6 @@
 using Application;
 using Data.Context;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Application.Services.Email;
 using Microsoft.EntityFrameworkCore;
 

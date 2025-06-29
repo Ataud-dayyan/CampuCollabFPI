@@ -1,0 +1,20 @@
+﻿@using Presentation.Models.EmployeeVM
+@model EmployeeDetailsViewModel
+
+<h2>Employee Details</h2>
+@{
+    ViewData["Title"] = "Employee Details";
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4>@Model.FirstName @Model.LastName</h4>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Hire Date:</strong> @Model.HireDate.ToString("D")</p>
+        <p><strong>Salary:</strong> ₦@Model.Salary.ToString("N2")</p>
+        <p><strong>Department:</strong> @Model.DepartmentName</p>
+    </div>
+</div>
+
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

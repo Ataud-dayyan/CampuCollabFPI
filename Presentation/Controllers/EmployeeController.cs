@@ -86,6 +86,32 @@ public class EmployeeController : BaseController
 
         return RedirectToAction(nameof(Index));
     }
+    public async Task<IActionResult> Details(Guid id)
+    {
+        var employeeDto = await _employeeService.GetEmployeeByIdAsync(id);
+
+        if (employeeDto == null)
+        {
+            return NotFound();
+        }
+
+        //   var addressDto = await _addressService.GetAddressByEmployeeIdAsync(id);
+
+        var viewModel = new EmployeeDetailsViewModel
+        {
+            Id = employeeDto.Id,
+            FirstName = employeeDto.FirstName,
+            LastName = employeeDto.LastName,
+            Email = employeeDto.Email,
+            HireDate = employeeDto.HireDate,
+            Salary = employeeDto.Salary,
+            DepartmentName = employeeDto.DepartmentName
+            // Address = addressDto
+        };
+
+        return View(viewModel);
+    }
+
 
     private async Task<IEnumerable<SelectListItem>> GetDepartmentSelectList()
     {
