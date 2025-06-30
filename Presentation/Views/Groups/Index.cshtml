@@ -1,0 +1,25 @@
+﻿@model IEnumerable<Data.Model.GroupModel>
+
+@{
+    ViewData["Title"] = "Groups";
+}
+
+<h2>Group List</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Group Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var group in Model)
+        {
+            <tr>
+                <td>@group.Name</td>
+                <td>@group.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>

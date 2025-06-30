@@ -29,3 +29,8 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+.nav-link.active {
+    border-radius: 20px;
+    color: white !important;
+    background-color: dimgray !important;
+}
