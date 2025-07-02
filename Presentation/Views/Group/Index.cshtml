@@ -4,9 +4,15 @@
 
 @{
     ViewData["Title"] = "Groups";
+    var currentUserId = UserManager.GetUserId(User);
+    var userId = UserManager.GetUserId(User);
+    var isMember = Model.Any(g => g.Members.Any(m => m.UserId == userId));
 }
-<a asp-action="Create" class="btn btn-outline-success">Create New Group</a>
 
+@if (!isMember)
+{
+    <a asp-action="Create" class="btn btn-outline-success mb-3">Create New Group</a>
+}
 <hr />
 
 @if (!Model.Any())
@@ -34,13 +40,27 @@ else
                     <td class="text-center">
                         <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-sm btn-primary me-2">View</a>
 
-                        @if (User.IsInRole("Admin") || group.CreatedById == UserManager.GetUserId(User))
+                        @if (User.IsInRole("Admin") || group.CreatedById == currentUserId)
                         {
-                            <a asp-action="Delete" asp-route-id="@group.Id" class="btn btn-sm btn-danger">Delete</a>
+                            <a asp-action="Delete" asp-route-id="@group.Id" class="btn btn-sm btn-danger me-2">Delete</a>
+                        }
+
+                        @* Only show Join if the user is NOT already in a group *@
+                        @if (!(ViewBag.IsAlreadyInGroup ?? false))
+                        {
+                            <form asp-action="Join" method="post" style="display: inline;">
+                                <input type="hidden" name="groupId" value="@group.Id" />
+                                <button type="submit" class="btn btn-sm btn-success">Join</button>
+                            </form>
+                        }
+                        else if ((int?)ViewBag.CurrentGroupId == group.Id)
+                        {
+                            <span class="badge bg-success">You're in this group</span>
                         }
                     </td>
                 </tr>
             }
+
         </tbody>
     </table>
 

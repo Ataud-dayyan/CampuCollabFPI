@@ -35,23 +35,31 @@
     }
     <h4 class="mt-4">Group Posts</h4>
 
-    <form asp-controller="Group" asp-action="PostMessage" method="post" class="mb-3">
-        <input type="hidden" name="groupId" value="@Model.Id" />
-        <div class="form-group">
-            <textarea name="content" class="form-control" placeholder="Type your message..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary mt-2">Post</button>
-    </form>
 
-    @foreach (var post in Model.Posts.OrderByDescending(p => p.PostedAt))
+    @if (User.Identity.IsAuthenticated)
     {
-        <div class="card mb-2">
-            <div class="card-body">
-                <strong>@post.User.UserName</strong> <small class="text-muted">@post.PostedAt.ToString("g")</small>
-                <p class="mb-0">@post.Content</p>
-            </div>
-        </div>
+        <form method="post" asp-action="PostMessage">
+
+            <form asp-controller="Group" asp-action="PostMessage" method="post" class="mb-3">
+                <input type="hidden" name="groupId" value="@Model.Id" />
+                <div class="form-group">
+                    <textarea name="content" class="form-control" placeholder="Type your message..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Post</button>
+            </form>
+
+            @foreach (var post in Model.Posts.OrderByDescending(p => p.PostedAt))
+            {
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <strong>@post.User.UserName</strong> <small class="text-muted">@post.PostedAt.ToString("g")</small>
+                        <p class="mb-0">@post.Content</p>
+                    </div>
+                </div>
+            }
+        </form>
     }
+
 
 
 

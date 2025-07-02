@@ -17,17 +17,45 @@ namespace Presentation.Controllers
             _context = context;
             _userManager = userManager;
         }
+
+        //<--------------------------------Index-------------------------------->
+
         public async Task<IActionResult> Index()
         {
-            var groups = await _context.Groups.ToListAsync();
-            return View(groups);
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            var existingMembership = await _context.GroupMemberships
+                .FirstOrDefaultAsync(m => m.UserId == currentUser!.Id);
+
+            if (existingMembership != null)
+            {
+                var userGroup = await _context.Groups
+                    .Where(g => g.Id == existingMembership.GroupId)
+                    .ToListAsync();
+                return View(userGroup);
+            }
+
+            var allGroups = await _context.Groups.ToListAsync();
+            return View(allGroups);
         }
+
+        //<--------------------------------Join-------------------------------->
+
         [HttpPost]
         public async Task<IActionResult> Join(int groupId)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login", "Account");
+
+            var alreadyInGroup = await _context.GroupMemberships
+             .AnyAsync(m => m.UserId == user.Id);
+
+            if (alreadyInGroup)
+            {
+                TempData["Error"] = "You can only join one group.";
+                return RedirectToAction("Index");
+            }
 
             // Check if already a member
             var existing = await _context.GroupMemberships
@@ -46,15 +74,29 @@ namespace Presentation.Controllers
 
             return RedirectToAction("Details", "Group", new { id = groupId });
         }
+
+        //<--------------------------------Details-------------------------------->
         public async Task<IActionResult> Details(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Auth");
+
+            // Make sure user is in this group
+            var isMember = await _context.GroupMemberships
+                .AnyAsync(m => m.GroupId == id && m.UserId == user.Id);
+
+            if (!isMember)
+            {
+                TempData["Error"] = "You are not a member of this group.";
+                return RedirectToAction("Index");
+            }
+
             var group = await _context.Groups
                 .Include(g => g.CreatedByUser)
                 .Include(g => g.Members).ThenInclude(m => m.User)
                 .Include(g => g.Posts).ThenInclude(p => p.User)
                 .FirstOrDefaultAsync(g => g.Id == id);
-
-
 
             if (group == null)
                 return NotFound();
@@ -62,10 +104,13 @@ namespace Presentation.Controllers
             return View(group);
         }
 
-        public ActionResult Create()
+        //<--------------------------------Create-------------------------------->
+        [HttpGet]
+        public IActionResult Create()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(GroupModel group)
@@ -84,18 +129,41 @@ namespace Presentation.Controllers
             group.CreatedById = user.Id;
             group.CreatedAt = DateTime.Now;
 
+            // Save group first
             _context.Groups.Add(group);
+            await _context.SaveChangesAsync();
+
+            // Then add the creator as a member
+            var membership = new GroupMembership
+            {
+                GroupId = group.Id,
+                UserId = user.Id
+            };
+
+            _context.GroupMemberships.Add(membership);
             await _context.SaveChangesAsync();
 
             TempData["success"] = "Group created successfully!";
             return RedirectToAction("Index");
         }
 
+
+        //<--------------------------------PostMessages-------------------------------->
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> PostMessage(int groupId, string content)
         {
             var userId = _userManager.GetUserId(User);
+
+            var isMember = await _context.GroupMemberships
+                .AnyAsync(m => m.GroupId == groupId && m.UserId == userId);
+
+            if (!isMember)
+            {
+                TempData["Error"] = "You can't post to a group you're not a member of.";
+                return RedirectToAction("Index");
+            }
 
             var post = new GroupPost
             {
@@ -110,6 +178,8 @@ namespace Presentation.Controllers
             return RedirectToAction("Details", new { id = groupId });
         }
 
+
+        //<--------------------------------Leave-------------------------------->
 
         [HttpPost]
         [Authorize]
@@ -126,9 +196,11 @@ namespace Presentation.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Details", new { id = groupId });
+            return RedirectToAction("Index");
         }
 
+
+        //<--------------------------------Delete-------------------------------->
 
         [Authorize]
         public async Task<IActionResult> Delete(int id)

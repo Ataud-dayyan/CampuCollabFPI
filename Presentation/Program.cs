@@ -82,7 +82,7 @@ static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     }
 
     // Replace with your actual email used for the admin user
-    string adminEmail = "your@email.com";
+    string adminEmail = "ghazalatauddayyan@gmail.com";
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
