@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Data.Model.GroupModel>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Groups";
+}
+<a asp-action="Create" class="btn btn-outline-success">Create New Group</a>
+
+<hr />
+
+@if (!Model.Any())
+{
+    <h5 class="text-danger">No records available!</h5>
+}
+else
+{
+    <h2 class="mb-4">Group List</h2>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Group Name</th>
+                <th>Description</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Model)
+            {
+                <tr>
+                    <td>@group.Name</td>
+                    <td>@group.Description</td>
+                    <td class="text-center">
+                        <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-sm btn-primary me-2">View</a>
+
+                        @if (User.IsInRole("Admin") || group.CreatedById == UserManager.GetUserId(User))
+                        {
+                            <a asp-action="Delete" asp-route-id="@group.Id" class="btn btn-sm btn-danger">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+

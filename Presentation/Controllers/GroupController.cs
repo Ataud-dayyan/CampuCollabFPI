@@ -1,5 +1,6 @@
 ﻿using Data.Context;
 using Data.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,5 +46,112 @@ namespace Presentation.Controllers
 
             return RedirectToAction("Details", "Group", new { id = groupId });
         }
+        public async Task<IActionResult> Details(int id)
+        {
+            var group = await _context.Groups
+                .Include(g => g.CreatedByUser)
+                .Include(g => g.Members).ThenInclude(m => m.User)
+                .Include(g => g.Posts).ThenInclude(p => p.User)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+
+
+            if (group == null)
+                return NotFound();
+
+            return View(group);
+        }
+
+        public ActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(GroupModel group)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(group);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            group.CreatedById = user.Id;
+            group.CreatedAt = DateTime.Now;
+
+            _context.Groups.Add(group);
+            await _context.SaveChangesAsync();
+
+            TempData["success"] = "Group created successfully!";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> PostMessage(int groupId, string content)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var post = new GroupPost
+            {
+                GroupId = groupId,
+                UserId = userId,
+                Content = content
+            };
+
+            _context.GroupPosts.Add(post);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = groupId });
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Leave(int groupId)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var membership = await _context.GroupMemberships
+                .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+
+            if (membership != null)
+            {
+                _context.GroupMemberships.Remove(membership);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Details", new { id = groupId });
+        }
+
+
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var group = await _context.Groups.FindAsync(id);
+            var currentUserId = _userManager.GetUserId(User);
+
+            var isAdmin = await _userManager.IsInRoleAsync(await _userManager.GetUserAsync(User), "Admin");
+
+            if (group == null || (group.CreatedById != currentUserId && !isAdmin))
+                return Unauthorized();
+
+            _context.Groups.Remove(group);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+
+            if (group.CreatedById != currentUserId && !isAdmin)
+            {
+                return Unauthorized();
+            }
+
+        }
+
+
     }
 }

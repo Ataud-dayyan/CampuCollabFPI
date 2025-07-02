@@ -2,7 +2,69 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>@User.Identity!.Name</p>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+<style>
+    .hero-wrapper {
+        position: relative;
+        height: 80vh;
+        overflow: hidden;
+    }
+
+    .carousel,
+    .carousel-inner,
+    .carousel-item {
+        height: 100%;
+    }
+
+    .carousel-item {
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .hero-text {
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        color: white;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+    }
+</style>
+
+<div class="hero-wrapper">
+    <div id="bgCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            <div class="carousel-item active" style="background-image: url('/images/Welcome.png');"></div>
+            <div class="carousel-item" style="background-image: url('/images/Welcome2.png');"></div>
+            <div class="carousel-item" style="background-image: url('/images/Welcome3.png');"></div>
+        </div>
+    </div>
+
+    <div class="hero-overlay">
+        <div class="hero-text animate__animated animate__fadeInDown">
+            <h1 class="display-5">Welcome, @UserManager.GetUserName(User)!</h1>
+            <p class="lead mt-3">Join student groups. Collaborate. Make an impact on campus.</p>
+            <a asp-controller="Group" asp-action="Index" class="btn btn-light btn-lg mt-3 animate__animated animate__fadeInUp animate__delay-1s">
+                Explore Groups
+            </a>
+        </div>
+    </div>
 </div>
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />

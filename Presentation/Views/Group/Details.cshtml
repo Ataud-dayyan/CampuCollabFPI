@@ -1,0 +1,74 @@
+﻿@model Data.Model.GroupModel
+@using Data.Model
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Group Details";
+    var currentUserId = UserManager.GetUserId(User);
+    var isOwner = Model.CreatedById == currentUserId;
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<div class="container mt-5">
+    <h2>@Model.Name</h2>
+    <hr />
+    <p><strong>Description:</strong> @Model.Description</p>
+    <p><strong>Department:</strong> @Model.Department</p>
+    <p><strong>Faculty:</strong> @Model.Faculty</p>
+    <p><strong>Level:</strong> @Model.SchoolLevel</p>
+    <p><strong>Created At:</strong> @Model.CreatedAt.ToShortDateString()</p>
+    <p><strong>Created By:</strong> @Model.CreatedByUser?.UserName</p>
+    <h4>Members</h4>
+    <ul class="list-group mb-4">
+        @foreach (var member in Model.Members)
+        {
+            <li class="list-group-item">@member.User.UserName</li>
+        }
+    </ul>
+    @if (Model.Members.Any(m => m.UserId == UserManager.GetUserId(User)))
+    {
+        <form asp-action="Leave" method="post" class="mt-2">
+            <input type="hidden" name="groupId" value="@Model.Id" />
+            <button type="submit" class="btn btn-danger">Leave Group</button>
+        </form>
+    }
+    <h4 class="mt-4">Group Posts</h4>
+
+    <form asp-controller="Group" asp-action="PostMessage" method="post" class="mb-3">
+        <input type="hidden" name="groupId" value="@Model.Id" />
+        <div class="form-group">
+            <textarea name="content" class="form-control" placeholder="Type your message..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Post</button>
+    </form>
+
+    @foreach (var post in Model.Posts.OrderByDescending(p => p.PostedAt))
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <strong>@post.User.UserName</strong> <small class="text-muted">@post.PostedAt.ToString("g")</small>
+                <p class="mb-0">@post.Content</p>
+            </div>
+        </div>
+    }
+
+
+
+    <div class="mt-4">
+        @if (isOwner || isAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">Edit</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+        }
+        else
+        {
+            <form asp-action="Join" method="post" class="d-inline">
+                <input type="hidden" name="groupId" value="@Model.Id" />
+                <button type="submit" class="btn btn-primary">Join Group</button>
+            </form>
+        }
+
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back to Groups</a>
+    </div>
+</div>

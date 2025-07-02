@@ -1,4 +1,7 @@
 ﻿
+body {
+    background-color: rgba(20,14,32,255) !important;
+}
 @keyframes fadeInUp {
     0% {
         opacity: 0;

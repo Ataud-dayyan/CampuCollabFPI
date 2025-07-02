@@ -30,7 +30,7 @@ public class AuthController : BaseController
         {
             var tempUser = new IdentityUser
             {
-                UserName = model.Email,
+                UserName = model.UserName,
                 Email = model.Email
             };
 
@@ -42,6 +42,8 @@ public class AuthController : BaseController
                 SetFlashMessage(errorMessages, "error");
                 return View(model);
             }
+
+            await _userManager.AddToRoleAsync(tempUser, "User");
 
             SetFlashMessage("Registration successful! You can now log in.", "success");
             return RedirectToAction("Login");
@@ -65,7 +67,7 @@ public class AuthController : BaseController
             if (user != null)
             {
 
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {

@@ -18,7 +18,9 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: rgba(20,14,32,255) !important;
+    margin-bottom: 60px;
+    color: white;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -30,7 +32,9 @@ body {
   text-align: start;
 }
 .nav-link.active {
-    border-radius: 20px;
+    border-radius: 10px;
     color: white !important;
-    background-color: dimgray !important;
+    background-color: rgba(20,14,32,255) !important;
+
 }
+
