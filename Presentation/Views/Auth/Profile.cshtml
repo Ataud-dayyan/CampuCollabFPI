@@ -1,0 +1,46 @@
+﻿@model Presentation.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Account Profile";
+}
+
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h3 class="mb-3">Account Profile</h3>
+
+        <dl class="row">
+            <dt class="col-sm-3">Username</dt>
+            <dd class="col-sm-9">@Model.UserName</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+
+            <dt class="col-sm-3">Current Group</dt>
+            <dd class="col-sm-9">@Model.CurrentGroupName</dd>
+
+            <dt class="col-sm-3">Selected Avatar</dt>
+            <dd class="col-sm-9">
+                @if (!string.IsNullOrEmpty(Model.SelectedAvatar))
+                {
+                    <img src="~/images/avatars/@Model.SelectedAvatar" class="rounded-circle" width="80" />
+                }
+                else
+                {
+                    <span>No avatar selected</span>
+                }
+            </dd>
+        </dl>
+
+        <form asp-action="UpdateAvatar" method="post" class="mt-4">
+            <div class="mb-3">
+                <label for="avatarSelect" class="form-label">Choose an Avatar:</label>
+                <select name="selectedAvatar" class="form-select" id="avatarSelect">
+                    @foreach (var avatar in Model.AvatarOptions)
+                    {
+                        <option value="@avatar">@avatar</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Avatar</button>
+        </form>
+    </div>
+</div>

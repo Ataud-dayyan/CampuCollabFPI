@@ -1,22 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Presentation.Models;
+﻿using CampusCollabFPI.Data.Models;
+using Data.Context;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Presentation.Models;
 
 namespace Presentation.Controllers;
 
 public class AuthController : BaseController
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly EmployeeAppDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
 
     public AuthController(
-        SignInManager<IdentityUser> signinManager,
-        UserManager<IdentityUser> userManager
-        )
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        EmployeeAppDbContext context
+    )
     {
-        _signInManager = signinManager;
+        _signInManager = signInManager;
         _userManager = userManager;
+        _context = context;
     }
 
     public IActionResult Register()
@@ -28,11 +34,13 @@ public class AuthController : BaseController
     {
         if (ModelState.IsValid)
         {
-            var tempUser = new IdentityUser
+            var tempUser = new ApplicationUser
             {
                 UserName = model.UserName,
-                Email = model.Email
+                Email = model.Email,
+                Avatar = "Avatar1.png"
             };
+
 
             var tempResult = await _userManager.CreateAsync(tempUser, model.Password);
 
@@ -83,7 +91,48 @@ public class AuthController : BaseController
         return View(model);
     }
 
-    //[Authorize]
+
+    [Authorize]
+    public async Task<IActionResult> Profile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return RedirectToAction("Login", "Auth");
+
+        // Get the user's group if any
+        var groupMembership = await _context.GroupMemberships
+            .Include(m => m.Group)
+            .FirstOrDefaultAsync(m => m.UserId == user.Id);
+
+        var model = new ProfileViewModel
+        {
+            Email = user.Email!,
+            UserName = user.UserName!,
+            CurrentGroupName = groupMembership?.Group?.Name ?? "No group",
+            AvatarOptions = new List<string> { "Avatar1.jpg", "Avatar2.png", "Avatar3.png", "Avatar4.png", "Avatar5.png", "Avatar6.jpeg", "Avata7.jpg", "Avatar8.jpg", "Avatar9.jpg", "Avatar10.jpg", "Avatar11.jpg" }, 
+            SelectedAvatar = user.Avatar 
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> UpdateAvatar(string selectedAvatar)
+    {
+        var user = await _userManager.GetUserAsync(User) as ApplicationUser;
+        if (user == null) return RedirectToAction("Login", "Auth");
+
+        user.Avatar = selectedAvatar;
+        await _userManager.UpdateAsync(user);
+
+        TempData["success"] = "Avatar updated!";
+        return RedirectToAction("Profile");
+    }
+
+
+
+
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();

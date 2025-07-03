@@ -2,6 +2,7 @@ using Application;
 using Data.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CampusCollabFPI.Data.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ builder.Services.AddDbContext<EmployeeAppDbContext>(options =>
 
 
 
-builder.Services.AddIdentity<IdentityUser,  IdentityRole> (
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
     options =>
     {
         options.Password.RequireDigit = false;
@@ -69,7 +70,8 @@ app.MapControllerRoute(
 static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
 {
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
 
     string[] roles = { "Admin", "User" };
 

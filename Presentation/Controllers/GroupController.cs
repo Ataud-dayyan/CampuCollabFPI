@@ -4,15 +4,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CampusCollabFPI.Data.Models;
 
 namespace Presentation.Controllers
 {
     public class GroupController : Controller
     {
         private readonly EmployeeAppDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public GroupController(EmployeeAppDbContext context, UserManager<IdentityUser> userManager)
+
+        public GroupController(EmployeeAppDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -23,6 +25,7 @@ namespace Presentation.Controllers
         public async Task<IActionResult> Index()
         {
             var currentUser = await _userManager.GetUserAsync(User);
+            var isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
 
             var existingMembership = await _context.GroupMemberships
                 .FirstOrDefaultAsync(m => m.UserId == currentUser!.Id);

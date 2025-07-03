@@ -6,7 +6,7 @@ using CampusCollabFPI.Data.Models;
 
 namespace Data.Context;
 
-public class EmployeeAppDbContext : IdentityDbContext<IdentityUser>
+public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
 {
     public EmployeeAppDbContext(DbContextOptions<EmployeeAppDbContext> options)
         : base(options) {}
@@ -18,12 +18,16 @@ public class EmployeeAppDbContext : IdentityDbContext<IdentityUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<GroupModel>()
-        .HasOne(g => g.CreatedByUser)
-        .WithMany()
-        .HasForeignKey(g => g.CreatedById)
-        .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<ApplicationUser>(); // ?? Register as entity
+
+        modelBuilder.Entity<GroupModel>()
+            .HasOne(g => g.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(g => g.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
+
+
 
 }
