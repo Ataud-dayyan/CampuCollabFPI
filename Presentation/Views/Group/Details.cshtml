@@ -1,7 +1,8 @@
 ﻿@model Data.Model.GroupModel
+@using CampusCollabFPI.Data.Models
 @using Data.Model
 @using Microsoft.AspNetCore.Identity
-@inject UserManager<IdentityUser> UserManager
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Group Details";
@@ -9,6 +10,17 @@
     var isOwner = Model.CreatedById == currentUserId;
     var isAdmin = User.IsInRole("Admin");
 }
+<style>
+    .avatar-img {
+        border: 2px solid transparent;
+        transition: 0.2s ease;
+    }
+
+        .avatar-img.selected {
+            border-color: #007bff;
+        }
+
+</style>
 
 <div class="container mt-5">
     <h2>@Model.Name</h2>
@@ -19,13 +31,26 @@
     <p><strong>Level:</strong> @Model.SchoolLevel</p>
     <p><strong>Created At:</strong> @Model.CreatedAt.ToShortDateString()</p>
     <p><strong>Created By:</strong> @Model.CreatedByUser?.UserName</p>
+
     <h4>Members</h4>
     <ul class="list-group mb-4">
         @foreach (var member in Model.Members)
         {
-            <li class="list-group-item">@member.User.UserName</li>
+            var avatar = (member.User as CampusCollabFPI.Data.Models.ApplicationUser)?.Avatar;
+            <li class="list-group-item d-flex align-items-center">
+                @if (!string.IsNullOrEmpty(avatar))
+                {
+                    <img src="~/images/avatars/@avatar" alt="Avatar" class="rounded-circle me-2" width="32" height="32" />
+                }
+                else
+                {
+                    <img src="~/images/avatars/default.png" alt="Default Avatar" class="rounded-circle me-2" width="32" height="32" />
+                }
+                <span>@member.User.UserName</span>
+            </li>
         }
     </ul>
+
     @if (Model.Members.Any(m => m.UserId == UserManager.GetUserId(User)))
     {
         <form asp-action="Leave" method="post" class="mt-2">

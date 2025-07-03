@@ -3,6 +3,7 @@
     ViewData["Title"] = "Account Profile";
 }
 
+<link href="~/css/site.css" rel="stylesheet" />
 <div class="container mt-5">
     <div class="card shadow p-4">
         <h3 class="mb-3">Account Profile</h3>
@@ -29,18 +30,54 @@
                 }
             </dd>
         </dl>
+        <form asp-action="UpdateAvatar" method="post">
+            <label class="form-label">Choose an Avatar:</label>
+            <div class="d-flex flex-wrap gap-4 avatar-grid">
+                @foreach (var avatar in Model.AvatarOptions)
+                {
+                    var avatarId = $"avatar_{avatar.GetHashCode()}";
+                    <label class="avatar-option position-relative" title="@avatar">
+                        <input type="radio" id="@avatarId" name="selectedAvatar" value="@avatar"
+                               class="d-none avatar-radio"
+                               @(Model.SelectedAvatar == avatar ? "checked" : "") />
 
-        <form asp-action="UpdateAvatar" method="post" class="mt-4">
-            <div class="mb-3">
-                <label for="avatarSelect" class="form-label">Choose an Avatar:</label>
-                <select name="selectedAvatar" class="form-select" id="avatarSelect">
-                    @foreach (var avatar in Model.AvatarOptions)
-                    {
-                        <option value="@avatar">@avatar</option>
-                    }
-                </select>
+                        <img src="~/images/avatars/@avatar"
+                             data-for="@avatarId"
+                             class="avatar-img @(Model.SelectedAvatar == avatar ? "selected" : "")"
+                             alt="@avatar" />
+
+                        @if (Model.SelectedAvatar == avatar)
+                        {
+                            <span class="checkmark">&#10004;</span>
+                        }
+                    </label>
+                }
             </div>
-            <button type="submit" class="btn btn-primary">Update Avatar</button>
+
+            <button type="submit" class="btn btn-primary mt-3">Update Avatar</button>
         </form>
+
+
+
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.avatar-img').forEach(img => {
+            img.addEventListener('click', () => {
+                const id = img.getAttribute('data-for');
+                const input = document.getElementById(id);
+                if (input) {
+                    input.checked = true;
+
+                    // Remove "selected" class from all
+                    document.querySelectorAll('.avatar-img').forEach(i => i.classList.remove('selected'));
+
+                    // Add "selected" to clicked one
+                    img.classList.add('selected');
+                }
+            });
+        });
+    </script>
+}

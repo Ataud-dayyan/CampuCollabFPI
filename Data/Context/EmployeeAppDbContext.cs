@@ -10,7 +10,7 @@ public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
 {
     public EmployeeAppDbContext(DbContextOptions<EmployeeAppDbContext> options)
         : base(options) {}
-    //public DbSet<Department> Departments { get; set; } = default!;
+     
     public DbSet<GroupModel> Groups { get; set; }
     public DbSet<GroupMembership> GroupMemberships { get; set; }
     public DbSet<GroupPost> GroupPosts { get; set; }
@@ -18,8 +18,7 @@ public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<ApplicationUser>(); // ?? Register as entity
+        modelBuilder.Entity<ApplicationUser>();
 
         modelBuilder.Entity<GroupModel>()
             .HasOne(g => g.CreatedByUser)

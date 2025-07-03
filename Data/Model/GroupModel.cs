@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CampusCollabFPI.Data.Models;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 namespace Data.Model;
 public class GroupModel
 {
@@ -14,7 +15,7 @@ public class GroupModel
     public string? SchoolLevel { get; set; }
 
     public string CreatedById { get; set; } = string.Empty;
-    public IdentityUser? CreatedByUser { get; set; }
+    public ApplicationUser? CreatedByUser { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

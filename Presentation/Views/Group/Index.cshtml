@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<Data.Model.GroupModel>
 @using Microsoft.AspNetCore.Identity
-@inject UserManager<IdentityUser> UserManager
+@inject UserManager<ApplicationUser> UserManager
+@using CampusCollabFPI.Data.Models
 
 @{
     ViewData["Title"] = "Groups";

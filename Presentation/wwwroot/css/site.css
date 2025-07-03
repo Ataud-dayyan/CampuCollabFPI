@@ -38,3 +38,41 @@ body {
 
 }
 
+.avatar-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    object-fit: cover;
+}
+
+    .avatar-img:hover {
+        transform: scale(1.05);
+        border-color: #007bff;
+    }
+
+    .avatar-img.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+    }
+
+.avatar-option {
+    position: relative;
+    display: inline-block;
+}
+
+.checkmark {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 6px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+

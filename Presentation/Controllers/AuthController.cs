@@ -108,7 +108,7 @@ public class AuthController : BaseController
             Email = user.Email!,
             UserName = user.UserName!,
             CurrentGroupName = groupMembership?.Group?.Name ?? "No group",
-            AvatarOptions = new List<string> { "Avatar1.jpg", "Avatar2.png", "Avatar3.png", "Avatar4.png", "Avatar5.png", "Avatar6.jpeg", "Avata7.jpg", "Avatar8.jpg", "Avatar9.jpg", "Avatar10.jpg", "Avatar11.jpg" }, 
+            AvatarOptions = new List<string> { "Avatar1.jpg", "Avatar2.png", "Avatar3.png", "Avatar4.png", "Avatar5.png", "Avatar6.png", "Avatar7.png", "Avatar8.jpg", "Avatar9.jpg", "Avatar10.jpg", "Avatar11.jpg" }, 
             SelectedAvatar = user.Avatar 
         };
 
