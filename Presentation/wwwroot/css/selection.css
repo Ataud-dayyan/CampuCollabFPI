@@ -1,0 +1,143 @@
+﻿body {
+    max-height: 120vh; 
+    min-height: 100vh;
+    display: grid;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.selection-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 60px 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    color: black;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+    .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .header p {
+        font-size: 1.2rem;
+        color: #7f8c8d;
+        margin-bottom: 0;
+    }
+
+.role-options {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.role-card {
+    background: white;
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.5s ease;
+    text-decoration: none;
+    color: inherit;
+    width: 280px;
+    border: 3px solid transparent;
+}
+
+    .role-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        border-color: #3498db;
+        color: inherit;
+        text-decoration: none;
+    }
+
+.role-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.student-card:hover {
+    border-color: #3498db;
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    color: white;
+}
+
+.lecturer-card:hover {
+    border-color: #e74c3c;
+    background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+    color: white;
+}
+
+.role-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.role-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.role-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .role-features li {
+        font-size: 0.9rem;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+        .role-features li:last-child {
+            border-bottom: none;
+        }
+
+.role-card:hover .role-features li {
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.back-link {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: opacity 0.3s ease;
+}
+
+    .back-link:hover {
+        opacity: 0.8;
+        color: white;
+    }
+
+@media (max-width: 768px) {
+    .role-options {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .role-card {
+        width: 100%;
+        max-width: 350px;
+    }
+
+    .selection-container {
+        padding: 40px 20px;
+        margin: 20px;
+    }
+}

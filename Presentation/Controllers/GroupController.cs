@@ -41,6 +41,49 @@ namespace Presentation.Controllers
             var allGroups = await _context.Groups.ToListAsync();
             return View(allGroups);
         }
+        //<--------------------------------Create-------------------------------->
+        [HttpGet]
+        [Authorize(Roles = "Lecturer")]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(GroupModel group)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(group);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            group.CreatedById = user.Id;
+
+            // Save group first
+            _context.Groups.Add(group);
+            await _context.SaveChangesAsync();
+
+            // Then add the creator as a member
+            var membership = new GroupMembership
+            {
+                GroupId = group.Id,
+                UserId = user.Id
+            };
+
+            _context.GroupMemberships.Add(membership);
+            await _context.SaveChangesAsync();
+
+            TempData["success"] = "Group created successfully!";
+            return RedirectToAction("Index");
+        }
+
 
         //<--------------------------------Join-------------------------------->
 
@@ -107,49 +150,7 @@ namespace Presentation.Controllers
             return View(group);
         }
 
-        //<--------------------------------Create-------------------------------->
-        [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(GroupModel group)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(group);
-            }
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Auth");
-            }
-
-            group.CreatedById = user.Id;
-            group.CreatedAt = DateTime.Now;
-
-            // Save group first
-            _context.Groups.Add(group);
-            await _context.SaveChangesAsync();
-
-            // Then add the creator as a member
-            var membership = new GroupMembership
-            {
-                GroupId = group.Id,
-                UserId = user.Id
-            };
-
-            _context.GroupMemberships.Add(membership);
-            await _context.SaveChangesAsync();
-
-            TempData["success"] = "Group created successfully!";
-            return RedirectToAction("Index");
-        }
-
+       
 
         //<--------------------------------PostMessages-------------------------------->
 
@@ -206,6 +207,7 @@ namespace Presentation.Controllers
         //<--------------------------------Delete-------------------------------->
 
         [Authorize]
+        [Authorize(Roles = "Lecturer")]
         public async Task<IActionResult> Delete(int id)
         {
             var group = await _context.Groups.FindAsync(id);

@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "ChooseRole";
+}
+
+<link href="~/css/selection.css" rel="stylesheet" />
+<div class="container">
+    <div class="selection-container">
+        <div class="header">
+            <h1>Welcome to CampusCollab</h1>
+            <p>Choose your role to get started</p>
+        </div>
+
+        <div class="role-options">
+            <a asp-action="RegisterStudent" class="role-card student-card">
+                <span class="role-icon">🎓</span>
+                <h3 class="role-title">Student</h3>
+                <p class="role-description">Join study groups, collaborate on projects, and connect with classmates</p>
+                <ul class="role-features">
+                    <li>Join existing groups</li>
+                    <li>Participate in discussions</li>
+                    <li>Share resources</li>
+                    <li>Collaborate on assignments</li>
+                </ul>
+            </a>
+
+            <a asp-action="RegisterLecturer" class="role-card lecturer-card">
+                <span class="role-icon">👨‍🏫</span>
+                <h3 class="role-title">Lecturer</h3>
+                <p class="role-description">Create courses, manage student groups, and facilitate learning</p>
+                <ul class="role-features">
+                    <li>Create multiple courses</li>
+                    <li>Manage student groups</li>
+                    <li>Assign group leaders</li>
+                    <li>Monitor discussions</li>
+                </ul>
+            </a>
+        </div>
+
+        <div class="mt-4">
+            <p class="text-muted">
+                Already have an account? <a asp-action="Login" style="color: #3498db;">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>

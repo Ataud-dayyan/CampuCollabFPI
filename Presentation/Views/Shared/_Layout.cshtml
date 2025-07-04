@@ -38,13 +38,13 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area ="" asp-controller="Group" asp-action="Index">Groups</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Group" asp-action="Index">Groups</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area ="" asp-controller="Auth" asp-action="Profile">Account Profile</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Auth" asp-action="Profile">Account Profile</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
                             </li>
                         } 
                         else
@@ -54,7 +54,7 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Register">Register</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="ChooseRole">Register</a>
                             </li>
                         }
 

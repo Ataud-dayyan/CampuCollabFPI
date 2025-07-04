@@ -8,7 +8,7 @@ public class GroupModel
 
     [Required]
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
+    public string CourseName { get; set; } = string.Empty;
 
     public string? Department { get; set; }
     public string? Faculty { get; set; }
@@ -16,8 +16,6 @@ public class GroupModel
 
     public string CreatedById { get; set; } = string.Empty;
     public ApplicationUser? CreatedByUser { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public ICollection<GroupMembership>? Members { get; set; } = new List<GroupMembership>();
     public ICollection<GroupPost> Posts { get; set; } = new List<GroupPost>();

@@ -25,40 +25,116 @@ public class AuthController : BaseController
         _context = context;
     }
 
-    public IActionResult Register()
+    // Role selection page
+    public IActionResult ChooseRole()
     {
         return View();
     }
+
+    //<---------------------Student registration--------------------->
+    public IActionResult RegisterStudent()
+    {
+        return View();
+    }
+
     [HttpPost]
-    public async Task<IActionResult> Register(RegisterViewModel model)
+    public async Task<IActionResult> RegisterStudent(StudentRegisterViewModel model)
     {
         if (ModelState.IsValid)
         {
-            var tempUser = new ApplicationUser
+            var user = new ApplicationUser
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                Avatar = "Avatar1.png"
+                DisplayName = model.UserName
             };
 
-
-            var tempResult = await _userManager.CreateAsync(tempUser, model.Password);
-
-            if (!tempResult.Succeeded)
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
             {
-                var errorMessages = string.Join("<br>", tempResult.Errors.Select(e => e.Description));
-                SetFlashMessage(errorMessages, "error");
-                return View(model);
+                await _userManager.AddToRoleAsync(user, "Student");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Dashboard", "Student");
             }
 
-            await _userManager.AddToRoleAsync(tempUser, "User");
-
-            SetFlashMessage("Registration successful! You can now log in.", "success");
-            return RedirectToAction("Login");
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
         }
-
         return View(model);
     }
+
+    //<---------------------Lecturer registration--------------------->
+    public IActionResult RegisterLecturer()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RegisterLecturer(LecturerRegisterViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                DisplayName = model.UserName
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Lecturer");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Dashboard", "Lecturer");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        }
+        return View(model);
+    }
+
+
+    //public IActionResult Register()
+    //{
+    //    return View();
+    //}
+    //[HttpPost]
+    //public async Task<IActionResult> Register(RegisterViewModel model)
+    //{
+    //    if (ModelState.IsValid)
+    //    {
+    //        var tempUser = new ApplicationUser
+    //        {
+    //            UserName = model.UserName,
+    //            Email = model.Email,
+    //            Avatar = "Avatar1.png",
+    //            DisplayName = model.UserName
+    //        };
+
+
+    //        var tempResult = await _userManager.CreateAsync(tempUser, model.Password);
+
+    //        if (!tempResult.Succeeded)
+    //        {
+    //            var errorMessages = string.Join(" ", tempResult.Errors.Select(e => e.Description));
+    //            SetFlashMessage(errorMessages, "error");
+    //            return View(model);
+    //        }
+
+    //        await _userManager.AddToRoleAsync(tempUser, "User");
+
+    //        SetFlashMessage("Registration successful! You can now log in.", "success");
+    //        return RedirectToAction("Login");
+    //    }
+
+    //    return View(model);
+    //}
 
 
     public IActionResult Login()
