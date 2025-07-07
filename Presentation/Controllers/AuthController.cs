@@ -3,6 +3,7 @@ using Data.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Models;
 
@@ -34,8 +35,18 @@ public class AuthController : BaseController
     //<---------------------Student registration--------------------->
     public IActionResult RegisterStudent()
     {
+        PopulateStudentDepartmentDropdown();
         return View();
     }
+    private void PopulateStudentDepartmentDropdown()
+    {
+        ViewBag.DepartmentList = new SelectList(new[]
+        {
+            new { Value = "Computer Science", Text = "Computer Science" },
+        },
+        "Value", "Text");
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> RegisterStudent(StudentRegisterViewModel model)
@@ -46,7 +57,8 @@ public class AuthController : BaseController
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                DisplayName = model.UserName
+                DisplayName = model.UserName,
+                StudentId = model.StudentId 
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -54,7 +66,12 @@ public class AuthController : BaseController
             {
                 await _userManager.AddToRoleAsync(user, "Student");
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Dashboard", "Student");
+                return RedirectToAction("Index", "Home");
+            }
+            if (!result.Succeeded)
+            {
+                var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
+                SetFlashMessage(errorMessages, "error");
             }
 
             foreach (var error in result.Errors)
@@ -64,10 +81,11 @@ public class AuthController : BaseController
         }
         return View(model);
     }
-
+    
     //<---------------------Lecturer registration--------------------->
     public IActionResult RegisterLecturer()
     {
+        PopulateLecturerDepartmentDropdown();
         return View();
     }
 
@@ -88,54 +106,35 @@ public class AuthController : BaseController
             {
                 await _userManager.AddToRoleAsync(user, "Lecturer");
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Dashboard", "Lecturer");
+                return RedirectToAction("Index", "Home");
+            }
+            if (!result.Succeeded)
+            {
+                var errorMessages = string.Join(" ", result.Errors.Select(e => e.Description));
+                SetFlashMessage(errorMessages, "error");
             }
 
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
+
             }
         }
+        PopulateLecturerDepartmentDropdown();
+
         return View(model);
+    }
+    private void PopulateLecturerDepartmentDropdown()
+    {
+        ViewBag.DepartmentList = new SelectList(new[]
+        {
+            new { Value = "Computer Science", Text = "Computer Science" },
+        }, 
+        "Value", "Text");
     }
 
 
-    //public IActionResult Register()
-    //{
-    //    return View();
-    //}
-    //[HttpPost]
-    //public async Task<IActionResult> Register(RegisterViewModel model)
-    //{
-    //    if (ModelState.IsValid)
-    //    {
-    //        var tempUser = new ApplicationUser
-    //        {
-    //            UserName = model.UserName,
-    //            Email = model.Email,
-    //            Avatar = "Avatar1.png",
-    //            DisplayName = model.UserName
-    //        };
-
-
-    //        var tempResult = await _userManager.CreateAsync(tempUser, model.Password);
-
-    //        if (!tempResult.Succeeded)
-    //        {
-    //            var errorMessages = string.Join(" ", tempResult.Errors.Select(e => e.Description));
-    //            SetFlashMessage(errorMessages, "error");
-    //            return View(model);
-    //        }
-
-    //        await _userManager.AddToRoleAsync(tempUser, "User");
-
-    //        SetFlashMessage("Registration successful! You can now log in.", "success");
-    //        return RedirectToAction("Login");
-    //    }
-
-    //    return View(model);
-    //}
-
+    
 
     public IActionResult Login()
     {
@@ -183,6 +182,7 @@ public class AuthController : BaseController
         {
             Email = user.Email!,
             UserName = user.UserName!,
+            StudentId = user.StudentId!,
             CurrentGroupName = groupMembership?.Group?.Name ?? "No group",
             AvatarOptions = new List<string> { "Avatar1.jpg", "Avatar2.png", "Avatar3.png", "Avatar4.png", "Avatar5.png", "Avatar6.png", "Avatar7.png", "Avatar8.jpg", "Avatar9.jpg", "Avatar10.jpg", "Avatar11.jpg" }, 
             SelectedAvatar = user.Avatar 

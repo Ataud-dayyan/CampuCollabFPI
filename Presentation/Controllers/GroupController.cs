@@ -1,10 +1,11 @@
-﻿using Data.Context;
+﻿using CampusCollabFPI.Data.Models;
+using Data.Context;
 using Data.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CampusCollabFPI.Data.Models;
+using Presentation.Models;
 
 namespace Presentation.Controllers
 {
@@ -21,26 +22,52 @@ namespace Presentation.Controllers
         }
 
         //<--------------------------------Index-------------------------------->
-
         public async Task<IActionResult> Index()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            var isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
-
-            var existingMembership = await _context.GroupMemberships
-                .FirstOrDefaultAsync(m => m.UserId == currentUser!.Id);
-
-            if (existingMembership != null)
+            if (currentUser == null)
             {
-                var userGroup = await _context.Groups
-                    .Where(g => g.Id == existingMembership.GroupId)
-                    .ToListAsync();
-                return View(userGroup);
+                TempData["Error"] = "You must be logged in to view groups.";
+                return RedirectToAction("Login", "Account");
             }
 
-            var allGroups = await _context.Groups.ToListAsync();
+            var isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
+            var isLecturer = await _userManager.IsInRoleAsync(currentUser, "Lecturer");
+
+            // Get all students for lecturers to use in the add student dropdown
+            if (isLecturer)
+            {
+                var allStudents = await _userManager.GetUsersInRoleAsync("Student");
+                ViewBag.AllStudents = allStudents.ToList();
+            }
+
+            // Only restrict students to their group
+            if (!isAdmin && !isLecturer)
+            {
+                // Student logic – only show their group
+                var existingMembership = await _context.GroupMemberships
+                    .FirstOrDefaultAsync(m => m.UserId == currentUser.Id);
+
+                if (existingMembership != null)
+                {
+                    var userGroup = await _context.Groups
+                        .Where(g => g.Id == existingMembership.GroupId)
+                        .Include(g => g.Members)
+                        .ToListAsync();
+
+                    return View(userGroup);
+                }
+            }
+
+            // Admin or Lecturer – show all groups
+            var allGroups = await _context.Groups
+                .Include(g => g.Members)
+                .ToListAsync();
+
             return View(allGroups);
         }
+
+
         //<--------------------------------Create-------------------------------->
         [HttpGet]
         [Authorize(Roles = "Lecturer")]
@@ -62,7 +89,7 @@ namespace Presentation.Controllers
             if (user == null)
             {
                 return RedirectToAction("Login", "Auth");
-            }
+            } 
 
             group.CreatedById = user.Id;
 
@@ -88,36 +115,38 @@ namespace Presentation.Controllers
         //<--------------------------------Join-------------------------------->
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Join(int groupId)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
-            var alreadyInGroup = await _context.GroupMemberships
-             .AnyAsync(m => m.UserId == user.Id);
-
-            if (alreadyInGroup)
+            // Only restrict students to one group
+            var isStudent = await _userManager.IsInRoleAsync(user, "Student");
+            if (isStudent)
             {
-                TempData["Error"] = "You can only join one group.";
-                return RedirectToAction("Index");
-            }
+                var alreadyInGroup = await _context.GroupMemberships
+                    .AnyAsync(m => m.UserId == user.Id);
 
-            // Check if already a member
-            var existing = await _context.GroupMemberships
-                .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == user.Id);
-
-            if (existing == null)
-            {
-                var membership = new GroupMembership
+                if (alreadyInGroup)
                 {
-                    GroupId = groupId,
-                    UserId = user.Id,
-                };
-                _context.GroupMemberships.Add(membership);
-                await _context.SaveChangesAsync();
+                    TempData["Error"] = "You can only join one group. Leave your current group to join another.";
+                    return RedirectToAction("Index");
+                }
             }
 
+            // Add new membership for any user (students, lecturers, etc.)
+            var membership = new GroupMembership
+            {
+                GroupId = groupId,
+                UserId = user.Id
+            };
+
+            _context.GroupMemberships.Add(membership);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "You have successfully joined the group!";
             return RedirectToAction("Details", "Group", new { id = groupId });
         }
 
@@ -147,10 +176,46 @@ namespace Presentation.Controllers
             if (group == null)
                 return NotFound();
 
+            // Add this: Get all students for the dropdown if user is a lecturer
+            var isLecturer = await _userManager.IsInRoleAsync(user, "Lecturer");
+            if (isLecturer)
+            {
+                var allStudents = await _userManager.GetUsersInRoleAsync("Student");
+                ViewBag.AllStudents = allStudents.ToList();
+            }
+
             return View(group);
         }
 
-       
+        //<--------------------------------AddMembers-------------------------------->
+        [HttpPost]
+        [Authorize(Roles = "Lecturer")]
+        public async Task<IActionResult> AddStudent(int groupId, string studentId)
+        {
+            var group = await _context.Groups.FindAsync(groupId);
+            if (group == null) return NotFound();
+
+            var isAlreadyMember = await _context.GroupMemberships
+                .AnyAsync(m => m.GroupId == groupId && m.UserId == studentId);
+
+            if (!isAlreadyMember)
+            {
+                _context.GroupMemberships.Add(new GroupMembership
+                {
+                    GroupId = groupId,
+                    UserId = studentId
+                });
+                await _context.SaveChangesAsync();
+                TempData["success"] = "Student added to group!";
+            }
+            else
+            {
+                TempData["Error"] = "Student is already a member of this group.";
+            }
+
+            return RedirectToAction("Details", new { id = groupId });
+        }
+
 
         //<--------------------------------PostMessages-------------------------------->
 
@@ -227,6 +292,26 @@ namespace Presentation.Controllers
                 return Unauthorized();
             }
 
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> StudentList()
+        {
+            // Get all users in the Student role
+            var students = await _userManager.GetUsersInRoleAsync("Student");
+
+            // Convert to view models
+            var studentViewModels = students.Select(student => new ProfileViewModel
+            {
+                UserName = student.UserName ?? string.Empty,
+                Email = student.Email ?? string.Empty,
+                StudentId = student.StudentId ?? string.Empty,
+                // Since you don't have groups in ApplicationUser yet, we'll use a placeholder
+                CurrentGroupName = student.CurrentGroupName ?? string.Empty,
+                SelectedAvatar = student.Avatar // <-- Add this line
+            }).ToList();
+
+            return View(studentViewModels);
         }
 
 

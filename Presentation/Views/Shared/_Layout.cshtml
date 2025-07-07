@@ -38,13 +38,13 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Group" asp-action="Index">Groups</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Groups" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Group" asp-action="Index">Groups</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Auth" asp-action="Profile">Account Profile</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account Profile" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Auth" asp-action="Profile">Account Profile</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+                                <a class="nav-link" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
                             </li>
                         } 
                         else
@@ -70,11 +70,11 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    @* <footer class="border-top footer text-muted">
         <div class="container text-light">
             &copy; 2025 - Dayyan - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </footer>
+    </footer> *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

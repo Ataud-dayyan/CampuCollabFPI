@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Dashboard\" />
     <Folder Include="wwwroot\images\Avatars\" />
   </ItemGroup>
 

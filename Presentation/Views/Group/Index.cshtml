@@ -2,68 +2,216 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 @using CampusCollabFPI.Data.Models
-
 @{
     ViewData["Title"] = "Groups";
     var currentUserId = UserManager.GetUserId(User);
     var userId = UserManager.GetUserId(User);
-    var isMember = Model.Any(g => g.Members.Any(m => m.UserId == userId));
+    var isLecturer = User.IsInRole("Lecturer");
+    var isStudent = User.IsInRole("Student");
+    var userCurrentGroup = isStudent ? Model.FirstOrDefault(g => g.Members.Any(m => m.UserId == userId)) : null;
+    var isUserInAnyGroup = userCurrentGroup != null;
 }
 
-@if (!isMember)
-{
-    <a asp-action="Create" class="btn btn-outline-success mb-3">Create New Group</a>
-}
-<hr />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="~/css/groupList.css" rel="stylesheet" />
 
-@if (!Model.Any())
-{
-    <h5 class="text-danger">No records available!</h5>
-}
-else
-{
-    <h2 class="mb-4">Group List</h2>
+<div class="groups-container">
+    <div class="page-header">
+        <h1 class="page-title">Study Groups</h1>
+        @if (!isStudent)
+        {
+            <a asp-action="Create" class="create-btn">
+                <i class="fas fa-plus"></i>
+                Create New Group
+            </a>
+        }
+    </div>
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Group Name</th>
-                <th>Description</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    @if (isStudent)
+    {
+        if (isUserInAnyGroup)
+        {
+            <div class="status-alert info">
+                <div class="status-icon info">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="status-content">
+                    <h4>You're currently in "@userCurrentGroup.Name"</h4>
+                    <p>You can view other groups but need to leave your current group to join a different one.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="status-alert warning">
+                <div class="status-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="status-content">
+                    <h4>You're not in any group</h4>
+                    <p>Browse available groups below and join one to start collaborating with your peers.</p>
+                </div>
+            </div>
+        }
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>No Groups Available</h3>
+            <p>There are currently no study groups created. Contact your lecturers to create one!</p>
+        </div>
+    }
+    else
+    {
+        <div class="groups-grid">
             @foreach (var group in Model)
             {
-                <tr>
-                    <td>@group.Name</td>
-                    <td>@group.CourseName</td>
-                    <td class="text-center">
-                        <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-sm btn-primary me-2">View</a>
+                var isCurrentGroup = userCurrentGroup?.Id == group.Id;
+				var isRestricted = !isCurrentGroup && User.IsInRole("Student");
 
-                        @if (User.IsInRole("Admin") || group.CreatedById == currentUserId)
+                <div class="group-card @(isCurrentGroup ? "current-group" : "") @(isRestricted ? "restricted" : "")">
+                    @if (isCurrentGroup)
+                    {
+                        <div class="badge current">
+                            <i class="fas fa-check"></i>
+                            Your Group
+                        </div>
+                    }
+                    else if (isRestricted)
+                    {
+                        <div class="restriction-overlay">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    }
+
+                    <div class="group-header">
+                        <div class="group-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="group-info">
+                            <h3>@group.Name</h3>
+                            <p><i class="fas fa-book"></i> @group.CourseName</p>
+                        </div>
+                    </div>
+
+                    <div class="group-actions">
+                        @if (isCurrentGroup)
                         {
-                            <a asp-action="Delete" asp-route-id="@group.Id" class="btn btn-sm btn-danger me-2">Delete</a>
+                            <!-- User is in this group - show full access -->
+                            <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-primary">
+                                <i class="fas fa-eye"></i>
+                                View Details
+                            </a>
                         }
-
-                        @* Only show Join if the user is NOT already in a group *@
-                        @if (!(ViewBag.IsAlreadyInGroup ?? false))
+                        else if (isRestricted)
                         {
+                            <!-- User is in another group - show restricted access -->
+                            <button class="btn btn-secondary" disabled title="Leave your current group to view this group">
+                                <i class="fas fa-lock"></i>
+                                Restricted
+                            </button>
+                        }
+                        else
+                        {
+                            <!-- User is not in any group - show join option -->
+                            <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-primary">
+                                <i class="fas fa-eye"></i>
+                                View Details
+                            </a>
                             <form asp-action="Join" method="post" style="display: inline;">
                                 <input type="hidden" name="groupId" value="@group.Id" />
-                                <button type="submit" class="btn btn-sm btn-success">Join</button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-user-plus"></i>
+                                    Join Group
+                                </button>
                             </form>
                         }
-                        else if ((int?)ViewBag.CurrentGroupId == group.Id)
+
+                        @if (User.IsInRole("Lecturer") && group.CreatedById == currentUserId)
                         {
-                            <span class="badge bg-success">You're in this group</span>
+                            <a asp-action="Delete" asp-route-id="@group.Id" class="btn btn-danger"
+                               onclick="return confirm('Are you sure you want to delete this group?')">
+                                <i class="fas fa-trash"></i>
+                                Delete
+                            </a>
                         }
-                    </td>
-                </tr>
+
+                        @if (User.IsInRole("Lecturer"))
+                        {
+                            var groupMemberIds = group.Members.Select(m => m.UserId).ToList();
+                            var availableStudents = new List<ApplicationUser>();
+
+                            var allStudents = ViewBag.AllStudents as List<ApplicationUser>;
+                            if (allStudents != null)
+                            {
+                                availableStudents = allStudents
+                                .Where(s => !groupMemberIds.Contains(s.Id))
+                                .ToList();
+                            }
+
+
+                            <form asp-action="AddStudent" method="post" class="d-flex align-items-center">
+                                <input type="hidden" name="groupId" value="@group.Id" />
+                                <select name="studentId" class="form-select me-2" required>
+                                    <option value="">-- Select Student --</option>
+                                    @foreach (var student in availableStudents)
+                                    {
+                                        <option value="@student.Id">@student.DisplayName (@student.Email)</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-success">Add Student</button>
+                            </form>
+                        }
+                    </div>
+                </div>
             }
+        </div>
+    }
+</div>
 
-        </tbody>
-    </table>
+@* @section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add confirmation for join actions
+            const joinForms = document.querySelectorAll('form[action*="Join"]');
+            joinForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const groupName = this.closest('.group-card').querySelector('h3').textContent;
+                    if (!confirm(`Are you sure you want to join "${groupName}"?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
 
-}
+            // Add loading state for join buttons
+            const joinButtons = document.querySelectorAll('button[type="submit"]');
+            joinButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
+                    this.disabled = true;
 
+                    // Re-enable if form submission fails
+                    setTimeout(() => {
+                        if (this.disabled) {
+                            this.innerHTML = originalText;
+                            this.disabled = false;
+                        }
+                    }, 5000);
+                });
+            });
+
+            // Add hover tooltips for restricted groups
+            const restrictedCards = document.querySelectorAll('.group-card.restricted');
+            restrictedCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.cursor = 'not-allowed';
+                });
+            });
+        });
+    </script>
+} *@

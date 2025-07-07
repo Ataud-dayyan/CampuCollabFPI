@@ -18,7 +18,9 @@ public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<ApplicationUser>();
+        modelBuilder.Entity<ApplicationUser>()
+            .HasIndex(u => u.StudentId)
+            .IsUnique();
 
         modelBuilder.Entity<GroupModel>()
             .HasOne(g => g.CreatedByUser)
