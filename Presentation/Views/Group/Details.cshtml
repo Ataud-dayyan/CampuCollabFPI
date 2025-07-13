@@ -9,258 +9,112 @@
     var isOwner = Model.CreatedById == currentUserId;
     var isAdmin = User.IsInRole("Admin");
 }
+<link href="~/css/groupdetails.css"rel="stylesheet" />
 
-<style>
-    .avatar-img {
-        border: 2px solid transparent;
-        transition: 0.2s ease;
-    }
-    .avatar-img.selected {
-        border-color: #007bff;
-    }
-    
-    .group-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    .info-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        border: 1px solid #e9ecef;
-        margin-bottom: 1.5rem;
-    }
-    
-    .member-item {
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        padding: 1rem;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-    
-    .member-item:hover {
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        transform: translateY(-1px);
-    }
-    
-    .post-container {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        border: 1px solid #e9ecef;
-        margin-bottom: 1.5rem;
-    }
-    
-    .post-form {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid #e9ecef;
-    }
-    
-    .post-card {
-        background: white;
-        border-radius: 10px;
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-        border: 1px solid #e9ecef;
-        transition: all 0.2s ease;
-    }
-    
-    .post-card:hover {
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-    
-    .btn-modern {
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        border: none;
-    }
-    
-    .btn-primary-modern {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    .btn-primary-modern:hover {
-        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .btn-danger-modern {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        color: white;
-    }
-    
-    .btn-danger-modern:hover {
-        background: linear-gradient(135deg, #ff5252 0%, #dd4b12 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .btn-secondary-modern {
-        background: #6c757d;
-        color: white;
-    }
-    
-    .btn-secondary-modern:hover {
-        background: #5a6268;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .info-badge {
-        display: inline-block;
-        background: rgba(255,255,255,0.2);
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .section-title {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .section-title::before {
-        content: '';
-        width: 4px;
-        height: 24px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 2px;
-    }
-    
-    .avatar-modern {
-        border-radius: 50%;
-        border: 3px solid #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .textarea-modern {
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        padding: 1rem;
-        font-size: 0.95rem;
-        resize: vertical;
-        min-height: 100px;
-    }
-    
-    .textarea-modern:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .post-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .post-author {
-        font-weight: 600;
-        color: #333;
-    }
-    
-    .post-time {
-        color: #6c757d;
-        font-size: 0.875rem;
-    }
-    
-    .post-content {
-        color: #495057;
-        line-height: 1.6;
-    }
-</style>
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+    <i class="fas fa-moon" id="themeIcon"></i>
+</button>
 
-<div class="container mt-4">
-    <!-- Group Header -->
-    <div class="group-header">
-        <h1 class="mb-3">@Model.Name</h1>
-        <div class="d-flex flex-wrap">
-            <span class="info-badge">@Model.Department</span>
-            <span class="info-badge">@Model.Faculty</span>
-            <span class="info-badge">Level @Model.SchoolLevel</span>
-            <span class="info-badge">Created by @Model.CreatedByUser?.UserName</span>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">@Model.Name</h1>
+            <div class="hero-badges">
+                <span class="hero-badge">
+                    <i class="fas fa-building me-2"></i>@Model.Department
+                </span>
+                <span class="hero-badge">
+                    <i class="fas fa-university me-2"></i>@Model.Faculty
+                </span>
+                <span class="hero-badge">
+                    <i class="fas fa-layer-group me-2"></i>Level @Model.SchoolLevel
+                </span>
+                <span class="hero-badge">
+                    <i class="fas fa-user-crown me-2"></i>@Model.CreatedByUser?.UserName
+                </span>
+            </div>
         </div>
     </div>
 
-    <!-- Group Information -->
-    <div class="info-card">
-        <h5 class="section-title">Course Information</h5>
-        <p class="mb-0"><strong>Description:</strong> @Model.CourseName</p>
+    <!-- Course Information -->
+    <div class="glass-card">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h2 class="section-title">Course Information</h2>
+        </div>
+        <p class="course-description"><strong>Description:</strong> @Model.CourseName</p>
     </div>
 
     <!-- Members Section -->
-    <div class="info-card">
-        <h5 class="section-title">Members (@Model.Members.Count())</h5>
-        @foreach (var member in Model.Members)
-        {
-            var avatar = (member.User as CampusCollabFPI.Data.Models.ApplicationUser)?.Avatar;
-            <div class="member-item mb-3">
-                @if (!string.IsNullOrEmpty(avatar))
-                {
-                    <img src="~/images/avatars/@avatar" alt="Avatar" class="avatar-modern me-3" width="40" height="40" />
-                }
-                else
-                {
-                    <img src="~/images/avatars/default.png" alt="Default Avatar" class="avatar-modern me-3" width="40" height="40" />
-                }
-                <span class="fw-medium text-dark">@member.User.UserName</span>
+    <div class="glass-card">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-users"></i>
             </div>
-        }
-        
+            <h2 class="section-title">Members (@Model.Members.Count())</h2>
+        </div>
+
+        <div class="members-grid">
+            @foreach (var member in Model.Members)
+            {
+                var avatar = (member.User as CampusCollabFPI.Data.Models.ApplicationUser)?.Avatar;
+                <div class="member-card">
+                    <div class="member-info">
+                        @if (!string.IsNullOrEmpty(avatar))
+                        {
+                            <img src="~/images/avatars/@avatar" alt="Avatar" class="member-avatar" />
+                        }
+                        else
+                        {
+                            <img src="~/images/avatars/default.png" alt="Default Avatar" class="member-avatar" />
+                        }
+                        <div class="member-name">@member.User.UserName</div>
+                    </div>
+                </div>
+            }
+        </div>
+
         @if (Model.Members.Any(m => m.UserId == UserManager.GetUserId(User)))
         {
-            <div class="mt-3">
+            <div class="mt-4">
                 <form asp-action="Leave" method="post" class="d-inline">
                     <input type="hidden" name="groupId" value="@Model.Id" />
-                    <button type="submit" class="btn btn-danger-modern btn-modern">Leave Group</button>
+                    <button type="submit" class="btn-modern btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>Leave Group
+                    </button>
                 </form>
             </div>
         }
     </div>
 
     <!-- Posts Section -->
-    <div class="post-container">
-        <h5 class="section-title">Group Discussion</h5>
-        
+    <div class="glass-card">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h2 class="section-title">Group Discussion</h2>
+        </div>
+
         @if (User.Identity.IsAuthenticated)
         {
-            <!-- Post Form -->
-            <div class="post-form">
+            <!-- Post Composer -->
+            <div class="post-composer">
                 <form asp-controller="Group" asp-action="PostMessage" method="post">
                     <input type="hidden" name="groupId" value="@Model.Id" />
                     <div class="mb-3">
-                        <textarea name="content" class="form-control textarea-modern" placeholder="Share your thoughts with the group..." required></textarea>
+                        <textarea name="content" class="post-textarea" placeholder="What's on your mind? Share your thoughts with the group..." required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary-modern btn-modern">
-                        <i class="fas fa-paper-plane me-2"></i>Post Message
+                    <button type="submit" class="btn-modern btn-primary">
+                        <i class="fas fa-paper-plane"></i>Post Message
                     </button>
                 </form>
             </div>
-            
+
             <!-- Posts Display -->
             @if (Model.Posts.Any())
             {
@@ -279,39 +133,116 @@
             }
             else
             {
-                <div class="text-center py-4 text-muted">
-                    <i class="fas fa-comments fa-2x mb-2"></i>
-                    <p>No posts yet. Be the first to start a discussion!</p>
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="empty-state-title">No discussions yet</h3>
+                    <p>Be the first to start a meaningful conversation!</p>
                 </div>
             }
         }
         else
         {
-            <div class="text-center py-4">
-                <p class="text-muted">Please log in to view and participate in group discussions.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="empty-state-title">Login Required</h3>
+                <p>Please log in to view and participate in group discussions.</p>
             </div>
         }
     </div>
 
-    <!-- Action Buttons -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <!-- Action Bar -->
+    <div class="action-bar">
         @if (User.IsInRole("Lecturer"))
         {
-            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger-modern btn-modern">
-                <i class="fas fa-trash-alt me-2"></i>Delete Group
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-modern btn-danger">
+                <i class="fas fa-trash-alt"></i>Delete Group
             </a>
         }
         else
         {
             <form asp-action="Join" method="post" class="d-inline">
                 <input type="hidden" name="groupId" value="@Model.Id" />
-                <button type="submit" class="btn btn-primary-modern btn-modern">
-                    <i class="fas fa-user-plus me-2"></i>Join Group
+                <button type="submit" class="btn-modern btn-primary">
+                    <i class="fas fa-user-plus"></i>Join Group
                 </button>
             </form>
         }
-        <a asp-action="Index" class="btn btn-secondary-modern btn-modern">
-            <i class="fas fa-arrow-left me-2"></i>Back to Groups
+        <a asp-action="Index" class="btn-modern btn-secondary">
+            <i class="fas fa-arrow-left"></i>Back to Groups
         </a>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        // Check for saved theme preference or default to 'light'
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', currentTheme);
+
+        // Update icon based on current theme
+        updateThemeIcon(currentTheme);
+
+        // Add staggered animation to cards
+        const cards = document.querySelectorAll('.glass-card, .member-card, .post-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            // Add a subtle animation to the theme toggle
+            themeToggle.style.animation = 'pulse 0.3s ease';
+
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+
+            // Reset animation
+            setTimeout(() => {
+                themeToggle.style.animation = '';
+            }, 300);
+        });
+
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.className = 'fas fa-sun';
+                themeToggle.title = 'Switch to Light Mode';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeToggle.title = 'Switch to Dark Mode';
+            }
+        }
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add hover effects to buttons
+        const buttons = document.querySelectorAll('.btn-modern');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>

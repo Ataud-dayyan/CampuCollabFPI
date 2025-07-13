@@ -98,14 +98,14 @@ namespace Presentation.Controllers
             await _context.SaveChangesAsync();
 
             // Then add the creator as a member
-            var membership = new GroupMembership
-            {
-                GroupId = group.Id,
-                UserId = user.Id
-            };
+            //var membership = new GroupMembership
+            //{
+            //    GroupId = group.Id,
+            //    UserId = user.Id
+            //};
 
-            _context.GroupMemberships.Add(membership);
-            await _context.SaveChangesAsync();
+            //_context.GroupMemberships.Add(membership);
+            //await _context.SaveChangesAsync();
 
             TempData["success"] = "Group created successfully!";
             return RedirectToAction("Index");
@@ -287,11 +287,6 @@ namespace Presentation.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Index");
 
-            if (group.CreatedById != currentUserId && !isAdmin)
-            {
-                return Unauthorized();
-            }
-
         }
 
         [HttpGet]
@@ -300,20 +295,30 @@ namespace Presentation.Controllers
             // Get all users in the Student role
             var students = await _userManager.GetUsersInRoleAsync("Student");
 
+            // Get all group memberships for students
+            var memberships = await _context.GroupMemberships
+                .Include(m => m.Group)
+                .Where(m => students.Select(s => s.Id).Contains(m.UserId))
+                .ToListAsync();
+
             // Convert to view models
-            var studentViewModels = students.Select(student => new ProfileViewModel
+            var studentViewModels = students.Select(student =>
             {
-                UserName = student.UserName ?? string.Empty,
-                Email = student.Email ?? string.Empty,
-                StudentId = student.StudentId ?? string.Empty,
-                // Since you don't have groups in ApplicationUser yet, we'll use a placeholder
-                CurrentGroupName = student.CurrentGroupName ?? string.Empty,
-                SelectedAvatar = student.Avatar // <-- Add this line
+                var membership = memberships.FirstOrDefault(m => m.UserId == student.Id);
+                var currentGroupName = membership?.Group?.Name ?? string.Empty;
+
+                return new ProfileViewModel
+                {
+                    UserName = student.UserName ?? string.Empty,
+                    Email = student.Email ?? string.Empty,
+                    StudentId = student.StudentId ?? string.Empty,
+                    CurrentGroupName = currentGroupName,
+                    SelectedAvatar = student.Avatar
+                };
             }).ToList();
 
             return View(studentViewModels);
         }
-
 
     }
 }
