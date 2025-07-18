@@ -22,8 +22,6 @@
                 <div class="carousel-item" style="background-image: url('/images/Welcome.png');"></div>
                 <div class="carousel-item active" style="background-image: url('/images/Welcome2.png');"></div>
                 <div class="carousel-item" style="background-image: url('/images/Welcome3.png');"></div>
-                <div class="carousel-item" style="background-image: url('/images/');"></div>
-
             </div>
         </div>
         <div class="hero-overlay">
@@ -68,6 +66,7 @@ else
 					</div>
 				</a>
             </div>
+            @if(User.IsInRole("Lecturer")){
             <div class="col-lg-3 col-md-6 mb-4">
                 <a asp-controller="Group" asp-action="StudentList" style="text-decoration:none;" >
                     <div class="stats-card members animate__animated animate__fadeInUp animate__delay-2s">
@@ -76,6 +75,8 @@ else
                     </div>
                 </a>
             </div>
+            }
+
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="stats-card admin animate__animated animate__fadeInUp animate__delay-3s">
                     <div class="stats-number">@Model.MyGroups</div>
