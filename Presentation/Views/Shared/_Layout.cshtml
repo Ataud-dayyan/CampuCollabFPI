@@ -26,38 +26,41 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity!.IsAuthenticated) 
+                        @if (User.Identity!.IsAuthenticated)
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
                                    asp-area=""
                                    asp-controller="Home"
                                    asp-action="Index">
-                                   Home
+                                    Home
                                 </a>
                             </li>
-
                             <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Groups" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Group" asp-action="Index">Groups</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Group" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                                   asp-area=""
+                                   asp-controller="Group"
+                                   asp-action="Index">Groups</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account Profile" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area ="" asp-controller="Auth" asp-action="Profile">Account Profile</a>
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Auth" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                                   asp-area=""
+                                   asp-controller="Auth"
+                                   asp-action="Profile">Account Profile</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
                             </li>
-                        } 
+                        }
                         else
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Login">Login</a>
                             </li>
-
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="ChooseRole">Register</a>
                             </li>
                         }
-
                     </ul>
                 </div>
             </div>

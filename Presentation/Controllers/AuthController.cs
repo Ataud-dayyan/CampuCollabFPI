@@ -214,4 +214,34 @@ public class AuthController : BaseController
         await _signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
     }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateUsername(string NewUsername)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return NotFound();
+
+        if (string.IsNullOrWhiteSpace(NewUsername))
+        {
+            TempData["ErrorMessage"] = "Username cannot be empty.";
+            return RedirectToAction("Profile");
+        }
+        if (NewUsername.Contains(" "))
+        {
+            TempData["ErrorMessage"] = "Username cannot contain spaces.";
+            return RedirectToAction("Profile");
+        }
+
+
+        user.UserName = NewUsername;
+        user.NormalizedUserName = NewUsername.ToUpper();
+
+        var result = await _userManager.UpdateAsync(user);
+
+        TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] =
+            result.Succeeded ? "Username updated successfully." : "Failed to update username.";
+
+        return RedirectToAction("Profile");
+    }
+
 }

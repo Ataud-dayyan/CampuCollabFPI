@@ -558,3 +558,202 @@ body {
         color: var(--text-primary);
         font-weight: 600;
     }
+
+
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animation classes for easier use */
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.pulse {
+    animation: pulse 0.3s ease;
+}
+/* Add Student Section */
+.add-student-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+    .add-student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+.add-student-form {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+    .add-student-form .form-group {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .add-student-form .form-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+.student-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+    .student-select:focus {
+        outline: none;
+        border-color: #4CAF50;
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+
+    .student-select option {
+        background: #2a2a2a;
+        color: white;
+        padding: 8px 12px;
+    }
+
+.btn-add-student {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    height: fit-content;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+    .btn-add-student:hover {
+        background: linear-gradient(135deg, #45a049, #3d8b40);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-add-student:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+    }
+
+    .btn-add-student i {
+        font-size: 16px;
+    }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .add-student-form {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+        .add-student-form .form-group {
+            min-width: 100%;
+        }
+
+    .btn-add-student {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .add-student-card {
+        padding: 20px;
+        margin: 16px 0;
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .student-select {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+    [data-theme="dark"] .student-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+/* Animation for when student is added */
+.add-student-card.success {
+    animation: addSuccess 0.6s ease-out;
+}
+
+@keyframes addSuccess {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

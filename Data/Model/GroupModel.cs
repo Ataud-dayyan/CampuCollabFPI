@@ -20,4 +20,5 @@ public class GroupModel
     public ICollection<GroupMembership>? Members { get; set; } = new List<GroupMembership>();
     public ICollection<GroupPost> Posts { get; set; } = new List<GroupPost>();
 
+
 }

@@ -12,7 +12,7 @@ namespace Presentation.Controllers
         }
     }
 
-    [Authorize(Roles = "Student,GroupLeader")]
+    [Authorize(Roles = "Student")]
     public class StudentController : Controller
     {
         public IActionResult Dashboard()

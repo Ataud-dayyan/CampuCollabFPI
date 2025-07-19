@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Presentation.Models;
+using System.Text.RegularExpressions;
 
 namespace Presentation.Controllers
 {
@@ -33,18 +34,14 @@ namespace Presentation.Controllers
 
             var isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
             var isLecturer = await _userManager.IsInRoleAsync(currentUser, "Lecturer");
-
-            // Get all students for lecturers to use in the add student dropdown
             if (isLecturer)
             {
                 var allStudents = await _userManager.GetUsersInRoleAsync("Student");
                 ViewBag.AllStudents = allStudents.ToList();
             }
 
-            // Only restrict students to their group
             if (!isAdmin && !isLecturer)
             {
-                // Student logic – only show their group
                 var existingMembership = await _context.GroupMemberships
                     .FirstOrDefaultAsync(m => m.UserId == currentUser.Id);
 
@@ -57,15 +54,18 @@ namespace Presentation.Controllers
 
                     return View(userGroup);
                 }
+                else
+                {
+                    return View(new List<Group>());
+                }
             }
 
-            // Admin or Lecturer – show all groups
             var allGroups = await _context.Groups
                 .Include(g => g.Members)
                 .ToListAsync();
-
             return View(allGroups);
         }
+
 
 
         //<--------------------------------Create-------------------------------->
@@ -288,6 +288,38 @@ namespace Presentation.Controllers
             return RedirectToAction("Index");
 
         }
+
+        //<--------------------------------Remove Students-------------------------------->
+        [HttpPost]
+        [Authorize(Roles = "Lecturer")]
+        public async Task<IActionResult> RemoveStudent(int groupId, string userId)
+        {
+            var group = await _context.Groups
+                .Include(g => g.Members)
+                .FirstOrDefaultAsync(g => g.Id == groupId);
+
+            if (group == null || string.IsNullOrEmpty(userId))
+            {
+                TempData["PostNotification"] = "❌ Invalid group or user.";
+                return RedirectToAction("Details", new { id = groupId });
+            }
+
+            var membership = group.Members.FirstOrDefault(m => m.UserId == userId);
+            if (membership != null)
+            {
+                group.Members.Remove(membership);
+                await _context.SaveChangesAsync();
+                TempData["PostNotification"] = "✅ Student removed successfully.";
+            }
+            else
+            {
+                TempData["PostNotification"] = "⚠️ Membership not found.";
+            }
+
+            return RedirectToAction("Details", new { id = groupId });
+        }
+
+
 
         [HttpGet]
         public async Task<IActionResult> StudentList()
