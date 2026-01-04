@@ -59,11 +59,16 @@ namespace Presentation.Controllers
                     return View(new List<Group>());
                 }
             }
+            var allGroups = await _context.Groups.Include(g => g.Members).ToListAsync();
 
-            var allGroups = await _context.Groups
-                .Include(g => g.Members)
-                .ToListAsync();
-            return View(allGroups);
+            var groupModels = allGroups.Select(g => new GroupModel
+            {
+                Id = g.Id,
+                Name = g.Name,
+                Members = g.Members
+            }).ToList();
+
+            return View(groupModels);
         }
 
 
