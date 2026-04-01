@@ -12,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
+// CLEAN THE STRING: Removes any accidental spaces, quotes, or apostrophes from copy-pasting
+if (!string.IsNullOrEmpty(connectionString))
+{
+    connectionString = connectionString.Trim(' ', '"', '\'');
+}
+
 if (string.IsNullOrEmpty(connectionString))
 {
     // Use local if DATABASE_URL is missing
@@ -28,6 +34,7 @@ else if (connectionString.StartsWith("postgres://"))
 
 builder.Services.AddDbContext<EmployeeAppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
     options =>
@@ -144,26 +151,20 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        // 1. CREATE THE TABLES FIRST
         var context = services.GetRequiredService<EmployeeAppDbContext>();
         if (context.Database.IsRelational())
         {
             context.Database.Migrate();
         }
+
+        // 2. ADD THE ROLES AND USERS SECOND
+        await SeedRolesAndAdminAsync(services);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
-    }
-
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    if (!await roleManager.RoleExistsAsync("Lecturer"))
-    {
-        await roleManager.CreateAsync(new IdentityRole("Lecturer"));
-    }
-    if (!await roleManager.RoleExistsAsync("Student"))
-    {
-        await roleManager.CreateAsync(new IdentityRole("Student"));
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
 
