@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using CampusCollabFPI.Data.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 
