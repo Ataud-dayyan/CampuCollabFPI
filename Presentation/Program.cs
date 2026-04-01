@@ -10,31 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-// CLEAN THE STRING: Removes any accidental spaces, quotes, or apostrophes from copy-pasting
-if (!string.IsNullOrEmpty(connectionString))
-{
-    connectionString = connectionString.Trim(' ', '"', '\'');
-}
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    // Use local if DATABASE_URL is missing
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
-else if (connectionString.StartsWith("postgres://"))
-{
-    // If it's a postgres:// URL, convert it to Npgsql format
-    var databaseUri = new Uri(connectionString);
-    var userInfo = databaseUri.UserInfo.Split(':');
-
-    connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.LocalPath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=True;";
-}
+var connectionString = "Host=dpg-d76nss94tr6s73aa6jm0-a;Port=5432;Database=campus_db_itbq;Username=campus_db_itbq_user;Password=CykfUpU8WK9Uz2mnhY4Pt3EXP19iQU3P;SSL Mode=Require;Trust Server Certificate=True;";
 
 builder.Services.AddDbContext<EmployeeAppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
     options =>
