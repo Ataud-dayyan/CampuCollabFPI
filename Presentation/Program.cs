@@ -141,6 +141,16 @@ using (var scope = app.Services.CreateScope())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating the database.");
     }
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    if (!await roleManager.RoleExistsAsync("Lecturer"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Lecturer"));
+    }
+    if (!await roleManager.RoleExistsAsync("Student"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Student"));
+    }
 }
 
 
