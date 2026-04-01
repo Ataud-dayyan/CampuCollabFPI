@@ -7,254 +7,274 @@
     ViewData["Title"] = "Group Details";
     var currentUserId = UserManager.GetUserId(User);
     var isOwner = Model.CreatedById == currentUserId;
-    var isAdmin = User.IsInRole("Admin");
+    var isLecturer = User.IsInRole("Lecturer");
+    var isMember = Model.Members.Any(m => m.UserId == currentUserId);
 }
 
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="~/css/groupdetails.css" rel="stylesheet" />
 
-<!-- Theme Toggle Button -->
-<button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
-    <i class="fas fa-moon" id="themeIcon"></i>
-</button>
+<div class="details-container">
 
-<div class="container">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">@Model.Name</h1>
-            <div class="hero-badges">
-                <span class="hero-badge">
-                    <i class="fas fa-university me-2"></i>@Model.Faculty
-                </span>
-                <span class="hero-badge">
-                    <i class="fas fa-building me-2"></i>@Model.Department
-                </span>
-                <span class="hero-badge">
-                    <i class="fas fa-layer-group me-2"></i>Level @Model.SchoolLevel
-                </span>
-                <span class="hero-badge">
-                    <i class="fas fa-user-crown me-2"></i>@Model.CreatedByUser?.UserName
-                </span>
+    <a asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Groups
+    </a>
+
+    <div class="details-hero">
+        <div class="details-hero-body">
+            <h1 class="details-title">@Model.Name</h1>
+            <div class="details-meta">
+                <span class="meta-chip"><i class="fas fa-university"></i> @Model.Faculty</span>
+                <span class="meta-chip"><i class="fas fa-building"></i> @Model.Department</span>
+                <span class="meta-chip"><i class="fas fa-layer-group"></i> Level @Model.SchoolLevel</span>
+                <span class="meta-chip"><i class="fas fa-crown"></i> @Model.CreatedByUser?.UserName</span>
             </div>
         </div>
-    </div>
 
-    <!-- Course Information -->
-    <div class="glass-card">
-        <div class="section-header">
-            <div class="section-icon">
-                <i class="fas fa-book-open"></i>
-            </div>
-            <h2 class="section-title">Course Information</h2>
-        </div>
-        <p class="course-description"><strong>Description:</strong> @Model.CourseName</p>
-    </div>
-
-    <!-- Members Section -->
-    <div class="glass-card">
-        <div class="section-header">
-            <div class="section-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <h2 class="section-title">Members (@Model.Members.Count())</h2>
-        </div>
-
-        <div class="members-grid">
-            @foreach (var member in Model.Members)
+        <div class="details-hero-actions">
+            @if (isMember)
             {
-                var avatar = (member.User as CampusCollabFPI.Data.Models.ApplicationUser)?.Avatar;
-                var userId = member.UserId;
-                <div class="member-card">
-                    <div class="member-info">
-                        @if (!string.IsNullOrEmpty(avatar))
-                        {
-                            <img src="~/images/avatars/@avatar" alt="Avatar" class="member-avatar" />
-                        }
-                        else
-                        {
-                            <img src="~/images/avatars/default.png" alt="Default Avatar" class="member-avatar" />
-                        }
-                        <div class="member-name">@member.User.UserName</div>
-                        @if (User.IsInRole("Lecturer"))
-                        {
-                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="toggleRemoveButton('@userId')">
-                                <i class="fas fa-user-minus"></i> Remove
-                            </button>
-                            <form asp-action="RemoveStudent" method="post" id="removeForm-@userId" class="remove-form" style="display: none;">
-                                <input type="hidden" name="groupId" value="@Model.Id" />
-                                <input type="hidden" name="userId" value="@userId" />
-                                <button type="submit" class="btn btn-danger btn-sm mt-2">
-                                    <i class="fas fa-check"></i> ✔
-                                </button>
-                                <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="cancelRemove('@userId')">
-                                    <i class="fas fa-times"></i> ❌
-                                </button>
-                            </form>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-
-        @if (Model.Members.Any(m => m.UserId == UserManager.GetUserId(User)))
-        {
-            <div class="mt-4">
-                <form asp-action="Leave" method="post" class="d-inline">
+                <form asp-action="Leave" method="post" style="display:inline;">
                     <input type="hidden" name="groupId" value="@Model.Id" />
-                    <button type="submit" class="btn-modern btn-danger" onclick="return confirm('Are you sure you want to leave this group?')">
-                        <i class="fas fa-sign-out-alt"></i>Leave Group
+                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to leave this group?')">
+                        <i class="fas fa-sign-out-alt"></i> Leave Group
                     </button>
                 </form>
-            </div>
-        }
+            }
+            @if (isLecturer && isOwner)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Delete this group? This cannot be undone.')">
+                    <i class="fas fa-trash-alt"></i> Delete Group
+                </a>
+            }
+        </div>
     </div>
 
-    @if (User.IsInRole("Lecturer"))
+    @if(isLecturer && isOwner)
+    {
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <span class="card-icon"><i class="fas fa-book-open"></i></span>
+                <h2>Upload Course Material</h2>
+            </div>
+            <div class="detail-card-body">
+                <form asp-action="UploadMaterial" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="groupId" value="@Model.Id" />
+                    <div class="form-group">
+                        <label>Select PDF or Material:</label>
+                        <input type="file" name="postedFile" class="form-control" accept=".pdf,.doc,.docx" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+    }
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <span class="card-icon"><i class="fas fa-book-open"></i></span>
+            <h2>Course Materials</h2>
+        </div>
+        <div class="detail-card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Material Name</th>
+                        <th>Uploaded On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.CourseMaterials)
+                    {
+                        <tr>
+                            <td>@item.FileName</td>
+                            <td>@item.UploadDate.ToShortDateString()</td>
+                            <td>
+                                <a href="@item.FilePath" download="@item.FileName" class="btn btn-success">
+                                    Download
+                                </a>
+                                @if (isLecturer && isOwner)
+                                {
+                                    <form asp-action="DeleteMaterial" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Delete this file?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <span class="card-icon"><i class="fas fa-users"></i></span>
+            <h2>Members <span class="count-badge">@Model.Members.Count()</span></h2>
+        </div>
+        <div class="detail-card-body">
+            <div class="members-grid">
+                @foreach (var member in Model.Members)
+                {
+                    var avatar = (member.User as ApplicationUser)?.Avatar;
+                    var memberId = member.UserId;
+
+                    <div class="member-card">
+                        <div class="member-avatar-wrap">
+                            @if (!string.IsNullOrEmpty(avatar))
+                            {
+                                <img src="~/images/avatars/@avatar" alt="Avatar" class="member-avatar" />
+                            }
+                            else
+                            {
+                                <img src="~/images/avatars/default.png" alt="Avatar" class="member-avatar" />
+                            }
+                        </div>
+                        <div class="member-details">
+                            <span class="member-name">@member.User.UserName</span>
+                            @if (isLecturer && isOwner)
+                            {
+                                <button type="button" class="btn btn-outline-danger btn-xs"
+                                        onclick="toggleRemoveButton('@memberId')">
+                                    <i class="fas fa-user-minus"></i> Remove
+                                </button>
+                                <form asp-action="RemoveStudent" method="post"
+                                      id="removeForm-@memberId" class="remove-form" style="display:none;">
+                                    <input type="hidden" name="groupId" value="@Model.Id" />
+                                    <input type="hidden" name="userId" value="@memberId" />
+                                    <span class="remove-confirm-label">Confirm remove?</span>
+                                    <button type="submit" class="btn btn-danger btn-xs">
+                                        <i class="fas fa-check"></i> Yes
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-xs"
+                                            onclick="cancelRemove('@memberId')">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (isLecturer && isOwner)
     {
         var groupMemberIds = Model.Members.Select(m => m.UserId).ToList();
-        var availableStudents = new List<ApplicationUser>();
-
         var allStudents = ViewBag.AllStudents as List<ApplicationUser>;
-        if (allStudents != null)
-        {
-            availableStudents = allStudents
-            .Where(s => !groupMemberIds.Contains(s.Id))
-            .ToList();
-        }
+        var availableStudents = allStudents?
+        .Where(s => !groupMemberIds.Contains(s.Id))
+        .ToList() ?? new List<ApplicationUser>();
 
-        <!-- Add Student Section -->
-        <div class="add-student-card">
-            <div class="section-header">
-                <div class="section-icon">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <h3 class="section-title">Add Student to Group</h3>
+        <div class="detail-card detail-card-accent">
+            <div class="detail-card-header">
+                <span class="card-icon card-icon-green"><i class="fas fa-user-plus"></i></span>
+                <h2>Add Student</h2>
             </div>
-
-            <form asp-action="AddStudent" method="post" class="add-student-form">
-                <input type="hidden" name="groupId" value="@Model.Id" />
-                <div class="form-group">
-                    <label for="studentSelect" class="form-label">Select Student</label>
-                    <select name="studentId" id="studentSelect" class="student-select" required>
-                        <option value="">-- Choose a student to add --</option>
-                        @foreach (var student in availableStudents)
-                        {
-                            <option value="@student.Id">@student.DisplayName (@student.Email)</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn-add-student">
-                    <i class="fas fa-plus"></i>
-                    Add Student
-                </button>
-            </form>
+            <div class="detail-card-body">
+                <form asp-action="AddStudent" method="post" class="add-student-form">
+                    <input type="hidden" name="groupId" value="@Model.Id" />
+                    <div class="add-student-row">
+                        <div class="add-student-select-wrap">
+                            <label class="form-label" for="studentSelect">Select a student to add</label>
+                            <select name="studentId" id="studentSelect" class="form-select" required>
+                                <option value="">— Choose a student —</option>
+                                @foreach (var student in availableStudents)
+                                {
+                                    <option value="@student.Id">@student.DisplayName (@student.Email)</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success add-btn">
+                            <i class="fas fa-plus"></i> Add Student
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     }
 
-    <!-- Posts Section -->
-    <div class="glass-card">
-        <div class="section-header">
-            <div class="section-icon">
-                <i class="fas fa-comments"></i>
-            </div>
-            <h2 class="section-title">Group Discussion</h2>
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <span class="card-icon"><i class="fas fa-comments"></i></span>
+            <h2>Group Discussion</h2>
         </div>
+        <div class="detail-card-body">
 
-        @if (User.Identity.IsAuthenticated)
-        {
-            <!-- Post Composer -->
-            <div class="post-composer">
-                <form asp-controller="Group" asp-action="PostMessage" method="post">
-                    <input type="hidden" name="groupId" value="@Model.Id" />
-                    <div class="mb-3">
-                        <textarea name="content" class="post-textarea" placeholder="What's on your mind? Share your thoughts with the group..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn-modern btn-primary">
-                        <i class="fas fa-paper-plane"></i>Post Message
-                    </button>
-                </form>
-            </div>
-
-            <!-- Posts Display -->
-            @if (Model.Posts.Any())
+            @if (User.Identity.IsAuthenticated)
             {
-                <div class="posts-list">
-                    @foreach (var post in Model.Posts.OrderByDescending(p => p.PostedAt))
-                    {
-                        <div class="post-card">
-                            <div class="post-header">
-                                <div class="post-author">@post.User.UserName</div>
-                                <div class="post-time">@post.PostedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</div>
-                            </div>
-                            <div class="post-content">@post.Content</div>
+                <div class="post-composer">
+                    <form asp-controller="Group" asp-action="PostMessage" method="post">
+                        <input type="hidden" name="groupId" value="@Model.Id" />
+                        <textarea name="content" class="post-textarea"
+                              placeholder="Share something with the group..." required></textarea>
+                        <div class="composer-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Post Message
+                            </button>
                         </div>
-                    }
+                    </form>
                 </div>
+
+                @if (Model.Posts.Any())
+                {
+                    <div class="posts-list">
+                        @foreach (var post in Model.Posts.OrderByDescending(p => p.PostedAt))
+                        {
+                            <div class="post-card">
+                                <div class="post-header">
+                                    <div class="post-avatar-initial">
+                                        @post.User.UserName.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="post-author">@post.User.UserName</div>
+                                        <div class="post-time">
+                                            @post.PostedAt.ToString("MMM dd, yyyy 'at' h:mm tt")
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="post-content">@post.Content</div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-discussion">
+                        <i class="fas fa-comments"></i>
+                        <p>No messages yet. Be the first to start a discussion!</p>
+                    </div>
+                }
             }
             else
             {
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3 class="empty-state-title">No discussions yet</h3>
-                    <p>Be the first to start a meaningful conversation!</p>
+                <div class="empty-discussion">
+                    <i class="fas fa-lock"></i>
+                    <p>Please log in to view and participate in discussions.</p>
                 </div>
             }
-        }
-        else
-        {
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <h3 class="empty-state-title">Login Required</h3>
-                <p>Please log in to view and participate in group discussions.</p>
-            </div>
-        }
+        </div>
     </div>
 
-    <!-- Action Bar -->
-    <div class="action-bar">
-        @if (User.IsInRole("Lecturer"))
-        {
-            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-modern btn-danger" onclick="return confirm('Are you sure you want to delete this group? This action cannot be undone.')">
-                <i class="fas fa-trash-alt"></i>Delete Group
-            </a>
-        }
-        else
-        {
-            @if (!Model.Members.Any(m => m.UserId == UserManager.GetUserId(User)))
-            {
-                <form asp-action="Join" method="post" class="d-inline">
-                    <input type="hidden" name="groupId" value="@Model.Id" />
-                    <button type="submit" class="btn-modern btn-primary">
-                        <i class="fas fa-user-plus"></i>Join Group
-                    </button>
-                </form>
-            }
-        }
-        <a asp-action="Index" class="btn-modern btn-secondary">
-            <i class="fas fa-arrow-left"></i>Back to Groups
-        </a>
-    </div>
 </div>
 
-@* toast notification *@
 @if (TempData["PostNotification"] != null)
 {
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
         <div class="toast align-items-center text-white bg-primary border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">
-                    @Html.Raw(TempData["PostNotification"])
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <div class="toast-body">@Html.Raw(TempData["PostNotification"])</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
-
     <script>
         setTimeout(() => {
             let toastEl = document.querySelector('.toast');
@@ -265,132 +285,16 @@
 
 @section Scripts {
     <script src="~/js/groupdetails.js"></script>
+    <script>
+        function toggleRemoveButton(userId) {
+            document.querySelectorAll('.remove-form').forEach(f => f.style.display = 'none');
+            const form = document.getElementById('removeForm-' + userId);
+            if (form) form.style.display = 'flex';
+        }
+
+        function cancelRemove(userId) {
+            const form = document.getElementById('removeForm-' + userId);
+            if (form) form.style.display = 'none';
+        }
+    </script>
 }
-<script>
-    // Wait for DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeThemeToggle();
-        initializeAnimations();
-        initializeButtonEffects();
-        initializeSmoothScrolling();
-    });
-
-    function initializeThemeToggle() {
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const body = document.body;
-
-        if (!themeToggle || !themeIcon) {
-            console.warn('Theme toggle elements not found');
-            return;
-        }
-
-        // Check for saved theme preference or default to 'light'
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        body.setAttribute('data-theme', currentTheme);
-
-        // Update icon based on current theme
-        updateThemeIcon(currentTheme);
-
-        themeToggle.addEventListener('click', function() {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            // Add animation
-            themeToggle.style.transform = 'scale(0.9)';
-            themeToggle.style.transition = 'transform 0.1s ease';
-
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-
-            // Reset animation
-            setTimeout(() => {
-                themeToggle.style.transform = 'scale(1)';
-            }, 100);
-        });
-
-        function updateThemeIcon(theme) {
-            if (theme === 'dark') {
-                themeIcon.className = 'fas fa-sun';
-                themeToggle.title = 'Switch to Light Mode';
-            } else {
-                themeIcon.className = 'fas fa-moon';
-                themeToggle.title = 'Switch to Dark Mode';
-            }
-        }
-    }
-
-    function initializeAnimations() {
-        // Add staggered animation to cards
-        const cards = document.querySelectorAll('.glass-card, .member-card, .post-card');
-        cards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
-            card.classList.add('fade-in-up');
-        });
-    }
-
-    function initializeButtonEffects() {
-        const buttons = document.querySelectorAll('.btn-modern, .btn');
-        buttons.forEach(button => {
-            button.addEventListener('mouseenter', function() {
-                if (!this.disabled) {
-                    this.style.transform = 'translateY(-2px)';
-                    this.style.transition = 'transform 0.2s ease';
-                }
-            });
-
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-    }
-
-    function initializeSmoothScrolling() {
-        // Add smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-    }
-
-    function toggleRemoveButton(userId) {
-        try {
-            // Hide all remove forms first
-            document.querySelectorAll('.remove-form').forEach(form => {
-                form.style.display = 'none';
-            });
-
-            // Show the specific form
-            const form = document.getElementById('removeForm-' + userId);
-            if (form) {
-                form.style.display = 'block';
-                form.classList.add('fade-in');
-            } else {
-                console.error('Remove form not found for user:', userId);
-            }
-        } catch (error) {
-            console.error('Error toggling remove button:', error);
-        }
-    }
-
-    function cancelRemove(userId) {
-        try {
-            const form = document.getElementById('removeForm-' + userId);
-            if (form) {
-                form.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error canceling remove:', error);
-        }
-    }
-
-
-</script>

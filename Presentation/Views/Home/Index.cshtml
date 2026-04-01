@@ -1,6 +1,6 @@
 ﻿@using CampusCollabFPI.Data.Models
 @using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
+@* @inject UserManager<ApplicationUser> UserManager *@
 @model Presentation.Models.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
@@ -36,7 +36,8 @@
                 <span>Admin Control</span>
             }
         </div>
-        <h1 class="hero-title">Welcome back, <span class="highlight">@UserManager.GetUserName(User)</span>!</h1>
+        <h1 class="hero-title">Welcome back,</h1>
+        <div class="info-value d-flex align-items-center">@Model.UserName</div>
         <p class="hero-subtitle">
             @if (User.IsInRole("Student"))
             {
@@ -94,62 +95,10 @@
                     <div class="stats-icon">
                         <i class="fas fa-building"></i>
                     </div>
-                    <div class="stats-info">
-                        <div class="stats-number">@Model.MyGroups</div>
-                        <div class="stats-label">@(User.IsInRole("Student") ? "My Groups" : "Departments")</div>
-                        <div class="stats-trend">✨ Active</div>
-                    </div>
                     <div class="card-pattern"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Enhanced Trending Groups -->
-        <div class="section trending-section">
-            <h2 class="section-title">
-                <span class="title-icon">🔥</span>
-                Trending Groups
-                <span class="title-decoration"></span>
-            </h2>
-            <div class="groups-grid">
-                @foreach (var group in Model.TrendingGroups)
-                {
-                    <div class="group-card">
-                        <div class="group-card-glow"></div>
-                        <div class="group-header">
-                            <div class="group-icon">
-                                <i class="fas fa-users"></i>
-                                <div class="icon-pulse"></div>
-                            </div>
-                            <div class="group-info">
-                                <h4>@group.Name</h4>
-                                <div class="member-badge">
-                                    <i class="fas fa-user-friends"></i>
-                                    <span>@group.MemberCount members</span>
-                                </div>
-                            </div>
-                            <div class="trending-indicator">
-                                <span class="pulse-dot"></span>
-                                Hot
-                            </div>
-                        </div>
-                        <p class="group-description">@group.Description</p>
-                        <div class="group-footer">
-                            <a asp-controller="Group" asp-action="Details" asp-route-id="@group.Id" class="btn-primary">
-                                <i class="fas fa-arrow-right"></i>
-                                View Group
-                            </a>
-                            @if (!string.IsNullOrEmpty(group.LeaderName))
-                            {
-                                <div class="group-leader">
-                                    <i class="fas fa-crown"></i>
-                                    <span>@group.LeaderName</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
     </div>
 </div>

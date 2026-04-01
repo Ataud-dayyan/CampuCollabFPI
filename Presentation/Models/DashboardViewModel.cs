@@ -1,7 +1,7 @@
 using Data.Model;
 namespace Presentation.Models;
 
-public class DashboardViewModel
+public class DashboardViewModel : ProfileViewModel
 {
     public int ActiveGroups { get; set; }
     public int GroupLeaders { get; set; }

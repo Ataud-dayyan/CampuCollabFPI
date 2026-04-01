@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 namespace Data.Model;
-public class GroupModel
+public class GroupModel 
 {
     public int Id { get; set; }
 
@@ -19,6 +19,5 @@ public class GroupModel
 
     public ICollection<GroupMembership>? Members { get; set; } = new List<GroupMembership>();
     public ICollection<GroupPost> Posts { get; set; } = new List<GroupPost>();
-
-
+    public List<CourseMaterials> CourseMaterials { get; set; } = new List<CourseMaterials>();
 }

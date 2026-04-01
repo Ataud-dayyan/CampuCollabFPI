@@ -13,7 +13,9 @@ public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
      
     public DbSet<GroupModel> Groups { get; set; }
     public DbSet<GroupMembership> GroupMemberships { get; set; }
+
     public DbSet<GroupPost> GroupPosts { get; set; }
+    public DbSet<CourseMaterials> CourseMaterials { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +28,12 @@ public class EmployeeAppDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(g => g.CreatedByUser)
             .WithMany()
             .HasForeignKey(g => g.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GroupMembership>()
+            .HasOne(gm => gm.Group)
+            .WithMany(g => g.Members)
+            .HasForeignKey(gm => gm.GroupId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 

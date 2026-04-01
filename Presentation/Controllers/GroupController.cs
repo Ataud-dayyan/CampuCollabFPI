@@ -40,25 +40,7 @@ namespace Presentation.Controllers
                 ViewBag.AllStudents = allStudents.ToList();
             }
 
-            if (!isAdmin && !isLecturer)
-            {
-                var existingMembership = await _context.GroupMemberships
-                    .FirstOrDefaultAsync(m => m.UserId == currentUser.Id);
-
-                if (existingMembership != null)
-                {
-                    var userGroup = await _context.Groups
-                        .Where(g => g.Id == existingMembership.GroupId)
-                        .Include(g => g.Members)
-                        .ToListAsync();
-
-                    return View(userGroup);
-                }
-                else
-                {
-                    return View(new List<Group>());
-                }
-            }
+            
             var allGroups = await _context.Groups.Include(g => g.Members).ToListAsync();
 
             var groupModels = allGroups.Select(g => new GroupModel
@@ -176,6 +158,7 @@ namespace Presentation.Controllers
                 .Include(g => g.CreatedByUser)
                 .Include(g => g.Members).ThenInclude(m => m.User)
                 .Include(g => g.Posts).ThenInclude(p => p.User)
+                .Include(g => g.CourseMaterials)
                 .FirstOrDefaultAsync(g => g.Id == id);
 
             if (group == null)
@@ -191,6 +174,67 @@ namespace Presentation.Controllers
 
             return View(group);
         }
+        //<--------------------------------UploadFiles-------------------------------->
+        [HttpPost]
+        [Authorize(Roles = "Lecturer")]
+        public async Task<IActionResult> UploadMaterial(int groupId, IFormFile postedFile)
+        {
+            if (postedFile != null && postedFile.Length > 0)
+            {
+                var userId = _userManager.GetUserId(User);
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/materials");
+                if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+                var fileName = Path.GetFileName(postedFile.FileName);
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await postedFile.CopyToAsync(stream);
+                }
+
+                var material = new CourseMaterials
+                {
+                    FileName = fileName,
+                    FilePath = "/uploads/materials/" + fileName,
+                    GroupId = groupId,
+                    UploadDate = DateTime.Now,
+                    UploadedBy = userId
+                };
+
+                _context.CourseMaterials.Add(material);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Details", new { id = groupId });
+        }
+
+        //<--------------------------------Delete Files-------------------------------->
+        [HttpPost]
+        [Authorize(Roles = "Lecturer")]
+        public async Task<IActionResult> DeleteMaterial(int id)
+        {
+            var material = await _context.CourseMaterials.FindAsync(id);
+            if (material != null)
+            {
+                // 1. Delete the physical file from the server
+                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", material.FilePath.TrimStart('/'));
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+
+                // 2. Remove from Database
+                var groupId = material.GroupId;
+                _context.CourseMaterials.Remove(material);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Details", new { id = groupId });
+            }
+            return BadRequest();
+        }
+
+
+
 
         //<--------------------------------AddMembers-------------------------------->
         [HttpPost]
@@ -314,7 +358,7 @@ namespace Presentation.Controllers
             {
                 group.Members.Remove(membership);
                 await _context.SaveChangesAsync();
-                TempData["PostNotification"] = "✅ Student removed successfully.";
+                TempData["PostNotification"] = "✅ Member removed successfully.";
             }
             else
             {
