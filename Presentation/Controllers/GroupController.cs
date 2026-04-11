@@ -327,13 +327,23 @@ namespace Presentation.Controllers
             var group = await _context.Groups.FindAsync(id);
             var currentUserId = _userManager.GetUserId(User);
 
+            var user = await _userManager.GetUserAsync(User);
             var isAdmin = await _userManager.IsInRoleAsync(await _userManager.GetUserAsync(User), "Admin");
 
             if (group == null || (group.CreatedById != currentUserId && !isAdmin))
                 return Unauthorized();
 
+            var memberships = _context.GroupMemberships.Where(m => m.GroupId == id);
+            var materials = _context.CourseMaterials.Where(m => m.GroupId == id);
+            var posts = _context.GroupPosts.Where(p => p.GroupId == id);
+
+            _context.GroupMemberships.RemoveRange(memberships);
+            _context.CourseMaterials.RemoveRange(materials);
+            _context.GroupPosts.RemoveRange(posts);
+
             _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
+
             return RedirectToAction("Index");
 
         }
